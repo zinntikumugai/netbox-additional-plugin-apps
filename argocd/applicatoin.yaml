@@ -21,7 +21,9 @@ spec:
         # --- NetBox コンテナ（プラグインを内包したカスタムイメージを推奨） ---
         image:
           # 例：あなたのレジストリのカスタムイメージ
-          repository: ghcr.io/zinntikumugai/netbox-additional-plugin-apps
+          registry: ghcr.io
+          repository: netbox-community/netbox
+          repository: zinntikumugai/netbox-additional-plugin-apps
           tag: "v4.4.4-3.4.1-with-plugins"
           pullPolicy: IfNotPresent
         netbox:
