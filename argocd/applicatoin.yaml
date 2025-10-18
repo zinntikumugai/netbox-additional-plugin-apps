@@ -15,6 +15,9 @@ spec:
     helm:
       releaseName: netbox
       values: |
+        global:
+          storageClass: truenas-nfs-csi
+        
         # --- NetBox コンテナ（プラグインを内包したカスタムイメージを推奨） ---
         image:
           # 例：あなたのレジストリのカスタムイメージ
