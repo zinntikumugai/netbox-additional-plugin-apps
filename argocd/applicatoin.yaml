@@ -1,0 +1,37 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: netbox
+  namespace: argocd
+spec:
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: netbox2
+  source:
+    repoURL: https://charts.netbox.oss.netboxlabs.com/
+    chart: netbox
+    targetRevision: 7.1.10
+    helm:
+      releaseName: netbox
+      values: |
+        # --- NetBox コンテナ（プラグインを内包したカスタムイメージを推奨） ---
+        image:
+          # 例：あなたのレジストリのカスタムイメージ
+          repository: registry.example.com/you/netbox
+          tag: "v4.4.4-with-plugins"
+          pullPolicy: IfNotPresent
+        netbox:
+          plugins:
+            - netbox_diode_plugin
+          pluginsConfig:
+            netbox_diode_plugin:
+              diode_username: "diode"
+              netbox_to_diode_client_secret: "diode" # セキュリティ?
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
