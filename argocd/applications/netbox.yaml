@@ -45,6 +45,10 @@ spec:
             # Podにも固有ラベルを付与
             podLabels:
               app.z1n.in/stack: netbox
+              app.z1n.in/component: postgresql
+            # Helmチャートのデフォルトサービスを無効化
+            service:
+              enabled: false
           # PDB設定（セレクタに固有ラベルを追加）
           pdb:
             create: true

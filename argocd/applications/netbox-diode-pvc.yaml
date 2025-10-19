@@ -3,7 +3,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: data-netbox-postgresql-0
-  namespace: netbox2
+  namespace: netbox-diode
 spec:
   accessModes:
     - ReadWriteOnce
@@ -16,7 +16,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: redis-data-netbox-redis-master-0
-  namespace: netbox2
+  namespace: netbox-diode
 spec:
   accessModes:
     - ReadWriteOnce
@@ -29,7 +29,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: redis-data-netbox-redis-replica-0
-  namespace: netbox2
+  namespace: netbox-diode
 spec:
   accessModes:
     - ReadWriteOnce
