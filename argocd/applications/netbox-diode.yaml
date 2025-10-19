@@ -12,6 +12,24 @@ spec:
     repoURL: https://netboxlabs.github.io/diode/charts
     chart: diode
     targetRevision: 1.8.1
+    helm:
+      releaseName: netbox
+      values: |
+        # PostgreSQL configuration with TrueNAS NFS CSI storage class
+        postgresql:
+          primary:
+            persistence:
+              enabled: true
+              storageClass: "truenas-nfs-csi"
+              size: "10Gi"
+        
+        # Redis configuration with TrueNAS NFS CSI storage class
+        redis:
+          persistence:
+            enabled: true
+            storageClass: "truenas-nfs-csi"
+            size: "1Gi"
+        
   syncPolicy:
     automated:
       prune: true
