@@ -99,6 +99,11 @@ spec:
             automigration:
               enabled: true
             dev: true
+          job:
+            annotations:
+              "helm.sh/hook": post-install,post-upgrade
+              "helm.sh/hook-weight": "1"
+              "helm.sh/hook-delete-policy": hook-succeeded
         
   syncPolicy:
     automated:
