@@ -15,44 +15,40 @@ spec:
     helm:
       releaseName: netbox
       values: |
-        # PostgreSQL configuration using existing PVC
+        # PostgreSQL configuration with pre-created PVC
         postgresql:
           enabled: true
-          # 固有ラベルを全リソースに付与（PDB重複回避）
-          commonLabels:
-            app.z1n.in/stack: diode
+          auth:
+            existingSecret: "diode-postgresql-secret"
+            secretKeys:
+              adminPasswordKey: "postgres-password"
           primary:
-            # Podにも固有ラベルを付与
-            podLabels:
-              app.z1n.in/stack: diode
             persistence:
               enabled: true
               existingClaim: "data-netbox-postgresql-0"
-          # PDB設定（セレクタに固有ラベルを追加）
-          pdb:
-            create: true
-            minAvailable: 1
         
-        # Redis configuration using existing PVC
+        # Redis configuration with pre-created PVC
         redis:
           enabled: true
-          # 固有ラベルを全リソースに付与
-          commonLabels:
-            app.z1n.in/stack: diode
+          auth:
+            enabled: true
+            existingSecret: "diode-redis-secret"
+            existingSecretPasswordKey: "redis-password"
           master:
-            # Podにも固有ラベルを付与
-            podLabels:
-              app.z1n.in/stack: diode
             persistence:
               enabled: true
               existingClaim: "redis-data-netbox-redis-master-0"
           replica:
-            # Podにも固有ラベルを付与
-            podLabels:
-              app.z1n.in/stack: diode
+            replicaCount: 1
             persistence:
               enabled: true
               existingClaim: "redis-data-netbox-redis-replica-0"
+        
+        # Hydra configuration
+        hydra:
+          secret:
+            enabled: true
+            nameOverride: "diode-hydra-secret"
         
   syncPolicy:
     automated:

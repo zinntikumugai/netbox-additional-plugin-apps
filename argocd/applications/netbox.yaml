@@ -26,6 +26,7 @@ spec:
           repository: zinntikumugai/netbox-custom
           tag: "v4.4.4-3.4.1-with-plugin"
           pullPolicy: IfNotPresent
+        
         netbox:
           plugins:
             - netbox_diode_plugin
@@ -33,6 +34,21 @@ spec:
             netbox_diode_plugin:
               diode_username: "diode"
               netbox_to_diode_client_secret: "diode" # セキュリティ?
+        
+        # --- PostgreSQL subchart設定（PDB重複回避） ---
+        postgresql:
+          enabled: true
+          # 固有ラベルを全リソースに付与
+          commonLabels:
+            app.z1n.in/stack: netbox
+          primary:
+            # Podにも固有ラベルを付与
+            podLabels:
+              app.z1n.in/stack: netbox
+          # PDB設定（セレクタに固有ラベルを追加）
+          pdb:
+            create: true
+            minAvailable: 1
 
   syncPolicy:
     automated:
