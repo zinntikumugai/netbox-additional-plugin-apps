@@ -21,6 +21,10 @@ spec:
           # 固有ラベルを全リソースに付与（PDB重複回避）
           commonLabels:
             app.z1n.in/stack: diode
+          auth:
+            existingSecret: "diode-postgresql-secret"
+            secretKeys:
+              adminPasswordKey: "postgres-password"
           primary:
             # Podにも固有ラベルを付与
             podLabels:
@@ -43,6 +47,9 @@ spec:
           # 固有ラベルを全リソースに付与
           commonLabels:
             app.z1n.in/stack: diode
+          auth:
+            existingSecret: "diode-redis-secret"
+            existingSecretPasswordKey: "redis-password"
           master:
             # Podにも固有ラベルを付与
             podLabels:
