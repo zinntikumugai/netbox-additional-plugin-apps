@@ -24,7 +24,7 @@ spec:
           registry: ghcr.io
           # repository: netbox-community/netbox
           repository: zinntikumugai/netbox-custom
-          tag: "v4.4.4-3.4.1-with-plugins"
+          tag: "v4.4.4-3.4.1-with-plugin"
           pullPolicy: IfNotPresent
         netbox:
           plugins:
