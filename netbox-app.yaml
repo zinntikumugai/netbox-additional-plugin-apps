@@ -1,11 +1,16 @@
-project: default
-source:
-  repoURL: https://github.com/zinntikumugai/netbox-additional-plugin-apps.git
-  path: argocd/applications
-  targetRevision: HEAD
-destination:
-  server: https://kubernetes.default.svc
-  namespace: netbox2
-syncPolicy:
-  syncOptions:
-    - CreateNamespace=true
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: 'netbox-git'
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/zinntikumugai/netbox-additional-plugin-apps.git
+    path: argocd/applications
+    targetRevision: HEAD
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: netbox2
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true

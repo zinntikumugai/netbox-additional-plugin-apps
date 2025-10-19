@@ -36,6 +36,13 @@ spec:
               size: "1Gi"
               accessModes:
                 - "ReadWriteOnce"
+          replica:
+            persistence:
+              enabled: true
+              storageClass: "truenas-nfs-csi"
+              size: "1Gi"
+              accessModes:
+                - "ReadWriteOnce"
         
   syncPolicy:
     automated:

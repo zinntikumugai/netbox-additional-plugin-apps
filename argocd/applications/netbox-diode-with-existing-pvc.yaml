@@ -30,6 +30,10 @@ spec:
             persistence:
               enabled: true
               existingClaim: "redis-data-netbox-redis-master-0"
+          replica:
+            persistence:
+              enabled: true
+              existingClaim: "redis-data-netbox-redis-replica-0"
         
   syncPolicy:
     automated:
