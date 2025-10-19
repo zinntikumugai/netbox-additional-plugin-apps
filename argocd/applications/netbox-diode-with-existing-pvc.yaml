@@ -36,6 +36,26 @@ spec:
             # Helmチャートのデフォルトサービスを無効化
             service:
               enabled: false
+            # 初期化スクリプト - hydraとdiodeユーザー・データベースを作成
+            initdb:
+              scripts:
+                init-databases.sh: |
+                  #!/bin/bash
+                  set -e
+                  
+                  # hydraユーザーとデータベースを作成
+                  psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+                    CREATE USER hydra WITH PASSWORD 'hcEJfXi5TPFqHWAu19Dz';
+                    CREATE DATABASE hydra OWNER hydra;
+                    GRANT ALL PRIVILEGES ON DATABASE hydra TO hydra;
+                  EOSQL
+                  
+                  # diodeユーザーとデータベースを作成
+                  psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+                    CREATE USER diode WITH PASSWORD '0123456789';
+                    CREATE DATABASE diode OWNER diode;
+                    GRANT ALL PRIVILEGES ON DATABASE diode TO diode;
+                  EOSQL
           # PDB設定（セレクタに固有ラベルを追加）
           pdb:
             create: true
