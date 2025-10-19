@@ -25,9 +25,13 @@ spec:
             # Podにも固有ラベルを付与
             podLabels:
               app.z1n.in/stack: diode
+              app.z1n.in/component: postgresql
             persistence:
               enabled: true
               existingClaim: "data-netbox-postgresql-0"
+            # Helmチャートのデフォルトサービスを無効化
+            service:
+              enabled: false
           # PDB設定（セレクタに固有ラベルを追加）
           pdb:
             create: true
@@ -43,16 +47,24 @@ spec:
             # Podにも固有ラベルを付与
             podLabels:
               app.z1n.in/stack: diode
+              app.z1n.in/component: redis-master
             persistence:
               enabled: true
               existingClaim: "redis-data-netbox-redis-master-0"
+            # Helmチャートのデフォルトサービスを無効化
+            service:
+              enabled: false
           replica:
             # Podにも固有ラベルを付与
             podLabels:
               app.z1n.in/stack: diode
+              app.z1n.in/component: redis-replica
             persistence:
               enabled: true
               existingClaim: "redis-data-netbox-redis-replica-0"
+            # Helmチャートのデフォルトサービスを無効化
+            service:
+              enabled: false
         
   syncPolicy:
     automated:

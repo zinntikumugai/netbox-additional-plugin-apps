@@ -1,0 +1,60 @@
+---
+# PostgreSQL Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: netbox-postgresql
+  namespace: netbox2
+  labels:
+    app.z1n.in/stack: diode
+    app.z1n.in/component: postgresql
+spec:
+  type: ClusterIP
+  ports:
+    - name: tcp-postgresql
+      port: 5432
+      targetPort: 5432
+      protocol: TCP
+  selector:
+    app.z1n.in/stack: diode
+    app.z1n.in/component: postgresql
+---
+# Redis Master Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: netbox-redis-master
+  namespace: netbox2
+  labels:
+    app.z1n.in/stack: diode
+    app.z1n.in/component: redis-master
+spec:
+  type: ClusterIP
+  ports:
+    - name: tcp-redis
+      port: 6379
+      targetPort: 6379
+      protocol: TCP
+  selector:
+    app.z1n.in/stack: diode
+    app.z1n.in/component: redis-master
+---
+# Redis Replica Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: netbox-redis-replica
+  namespace: netbox2
+  labels:
+    app.z1n.in/stack: diode
+    app.z1n.in/component: redis-replica
+spec:
+  type: ClusterIP
+  ports:
+    - name: tcp-redis
+      port: 6379
+      targetPort: 6379
+      protocol: TCP
+  selector:
+    app.z1n.in/stack: diode
+    app.z1n.in/component: redis-replica
