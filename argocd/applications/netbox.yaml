@@ -22,8 +22,8 @@ spec:
         image:
           # 例：あなたのレジストリのカスタムイメージ
           registry: ghcr.io
-          repository: netbox-community/netbox
-          repository: zinntikumugai/netbox-additional-plugin-apps
+          # repository: netbox-community/netbox
+          repository: zinntikumugai/netbox-custom
           tag: "v4.4.4-3.4.1-with-plugins"
           pullPolicy: IfNotPresent
         netbox:
