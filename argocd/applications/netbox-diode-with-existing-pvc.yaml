@@ -93,6 +93,13 @@ spec:
             service:
               enabled: false
         
+        # Hydra configuration
+        hydra:
+          hydra:
+            automigration:
+              enabled: true
+            dev: true
+        
   syncPolicy:
     automated:
       prune: true
