@@ -1,0 +1,26 @@
+# Pre-created PVCs for netbox-diode to ensure truenas-nfs-csi storage class usage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: data-netbox-postgresql-0
+  namespace: netbox2
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: truenas-nfs-csi
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-data-netbox-redis-master-0
+  namespace: netbox2
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: truenas-nfs-csi
+  resources:
+    requests:
+      storage: 1Gi

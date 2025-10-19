@@ -15,27 +15,21 @@ spec:
     helm:
       releaseName: netbox
       values: |
-        # PostgreSQL configuration with TrueNAS NFS CSI storage class
+        # PostgreSQL configuration using existing PVC
         postgresql:
           enabled: true
           primary:
             persistence:
               enabled: true
-              storageClass: "truenas-nfs-csi"
-              size: "10Gi"
-              accessModes:
-                - "ReadWriteOnce"
+              existingClaim: "data-netbox-postgresql-0"
         
-        # Redis configuration with TrueNAS NFS CSI storage class
+        # Redis configuration using existing PVC
         redis:
           enabled: true
           master:
             persistence:
               enabled: true
-              storageClass: "truenas-nfs-csi"
-              size: "1Gi"
-              accessModes:
-                - "ReadWriteOnce"
+              existingClaim: "redis-data-netbox-redis-master-0"
         
   syncPolicy:
     automated:
