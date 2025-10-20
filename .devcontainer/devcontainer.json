@@ -15,6 +15,9 @@
 			"helm": "latest",
 			"minikube": "none"
 		},
+		"ghcr.io/devcontainers/features/node:1": {
+			"version": "lts"
+		},
 		"./local-features/copy-kube-config": {}
 	},
 
@@ -29,17 +32,7 @@
 			"target": "/usr/local/share/kube-localhost",
 			"type": "bind"
 		}
-	]
+	],
 
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
-
-	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "kubectl version",
-
-	// Configure tool-specific properties.
-	// "customizations": {},
-
-	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-	// "remoteUser": "root"
+	"runArgs": ["--env-file", ".env"]
 }
