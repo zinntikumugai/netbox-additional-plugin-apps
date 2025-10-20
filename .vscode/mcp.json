@@ -1,0 +1,19 @@
+{
+	"servers": {
+		"kubernets": {
+			"command": "npx",
+			"args": [
+				"mcp-server-kubernetes"
+			]
+		},
+		"argocd-mcp-stdio": {
+			"type": "stdio",
+			"command": "npx",
+			"args": [
+				"argocd-mcp@latest",
+				"stdio"
+			]
+		}
+	},
+	"inputs": []
+}
