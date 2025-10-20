@@ -13,7 +13,7 @@ spec:
     chart: diode
     targetRevision: 1.8.1
     helm:
-      releaseName: netbox
+      releaseName: netbox-diode
       values: |
         # PostgreSQL configuration using existing PVC
         postgresql:
