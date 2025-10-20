@@ -41,6 +41,12 @@ spec:
           # 固有ラベルを全リソースに付与
           commonLabels:
             app.z1n.in/stack: netbox
+          # 既存Secretからパスワードを読み込む
+          auth:
+            existingSecret: "netbox-postgresql-auth"
+            secretKeys:
+              adminPasswordKey: "postgres-password"
+              userPasswordKey: "password"
           primary:
             # Podにも固有ラベルを付与
             podLabels:

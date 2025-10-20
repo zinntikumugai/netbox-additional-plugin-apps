@@ -18,3 +18,4 @@ spec:
   selector:
     app.z1n.in/stack: netbox
     app.z1n.in/component: postgresql
+
