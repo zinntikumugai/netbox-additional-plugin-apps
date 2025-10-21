@@ -55,12 +55,20 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Extracted version: $VERSION"
 
+      - name: Get git short hash
+        id: git-hash
+        run: |
+          SHORT_HASH=$(git rev-parse --short HEAD)
+          echo "short_hash=$SHORT_HASH" >> $GITHUB_OUTPUT
+          echo "Git short hash: $SHORT_HASH"
+
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
           tags: |
+            type=raw,value=${{ steps.extract-version.outputs.version }}${{ env.TAG_SUFFIX }}-${{ steps.git-hash.outputs.short_hash }}
             type=raw,value=${{ steps.extract-version.outputs.version }}${{ env.TAG_SUFFIX }}
             type=raw,value=latest,enable={{is_default_branch}}
           labels: |
@@ -68,27 +76,7 @@ jobs:
             org.opencontainers.image.description=NetBox with additional plugins
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
 
-      - name: Check if image already exists
-        id: check-image
-        run: |
-          TAG="${{ steps.extract-version.outputs.version }}${{ env.TAG_SUFFIX }}"
-          IMAGE="${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:$TAG"
-
-          echo "Checking if image exists: $IMAGE"
-
-          # イメージの存在確認
-          if docker manifest inspect "$IMAGE" > /dev/null 2>&1; then
-            echo "Image $IMAGE already exists"
-            echo "exists=true" >> $GITHUB_OUTPUT
-            echo "skip_build=true" >> $GITHUB_OUTPUT
-          else
-            echo "Image $IMAGE does not exist"
-            echo "exists=false" >> $GITHUB_OUTPUT
-            echo "skip_build=false" >> $GITHUB_OUTPUT
-          fi
-
       - name: Build and push Docker image
-        if: steps.check-image.outputs.skip_build == 'false'
         uses: docker/build-push-action@v5
         with:
           context: docker/netbox-custom
@@ -106,13 +94,12 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Image Name:** ${{ env.IMAGE_NAME }}" >> $GITHUB_STEP_SUMMARY
           echo "**Base Version:** ${{ steps.extract-version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Final Tag:** ${{ steps.extract-version.outputs.version }}${{ env.TAG_SUFFIX }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Git Hash:** ${{ steps.git-hash.outputs.short_hash }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Final Tags:**" >> $GITHUB_STEP_SUMMARY
+          echo "- ${{ steps.extract-version.outputs.version }}${{ env.TAG_SUFFIX }}-${{ steps.git-hash.outputs.short_hash }}" >> $GITHUB_STEP_SUMMARY
+          echo "- ${{ steps.extract-version.outputs.version }}${{ env.TAG_SUFFIX }}" >> $GITHUB_STEP_SUMMARY
+          echo "- latest" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-
-          if [ "${{ steps.check-image.outputs.skip_build }}" == "true" ]; then
-            echo "**Status:** ⏭️ Build skipped - Image already exists" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "**Status:** ✅ Image built and pushed successfully" >> $GITHUB_STEP_SUMMARY
-            echo "**Built Tags:**" >> $GITHUB_STEP_SUMMARY
-            echo '${{ steps.meta.outputs.tags }}' | sed 's/^/- /' >> $GITHUB_STEP_SUMMARY
-          fi
+          echo "**Status:** ✅ Image built and pushed successfully" >> $GITHUB_STEP_SUMMARY
+          echo "**Built Tags:**" >> $GITHUB_STEP_SUMMARY
+          echo '${{ steps.meta.outputs.tags }}' | sed 's/^/- /' >> $GITHUB_STEP_SUMMARY
