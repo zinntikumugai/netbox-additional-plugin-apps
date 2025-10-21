@@ -32,7 +32,7 @@ spec:
           - netbox_bgp
         pluginsConfig:
           netbox_diode_plugin:
-            diode_target_override: "grpc://netbox-diode-ingester.netbox-diode.svc.cluster.local:8081/diode"
+            diode_target_override: "grpc://netbox-diode-ingress-nginx-controller.netbox-diode.svc.cluster.local:80/diode"
             diode_username: "diode"
             netbox_to_diode_client_secret: "0123456789"
           netbox_bgp:
