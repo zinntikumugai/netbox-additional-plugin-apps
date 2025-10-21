@@ -1,0 +1,55 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: netbox-ingress
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/zinntikumugai/netbox-additional-plugin-apps.git
+    targetRevision: main
+    path: argocd/applications
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: netbox2
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: netbox-ingress
+  namespace: netbox2
+  annotations:
+    # Nginx Ingress設定
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    # External DNS設定
+    external-dns.alpha.kubernetes.io/hostname: netbox2.service.z1n.in
+    external-dns.alpha.kubernetes.io/ttl: "300"
+  labels:
+    app.kubernetes.io/name: netbox
+    app.kubernetes.io/instance: netbox
+    app.kubernetes.io/component: ingress
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: netbox2.service.z1n.in
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: netbox
+            port:
+              number: 80
+  # TLS設定（必要に応じてコメント解除）
+  # tls:
+  # - hosts:
+  #   - netbox2.service.z1n.in
+  #   secretName: netbox-tls-secret
