@@ -27,13 +27,12 @@ spec:
           tag: "v4.4.4-3.4.1-with-plugin"
           pullPolicy: IfNotPresent
         
-        netbox:
-          plugins:
-            - netbox_diode_plugin
-          pluginsConfig:
-            netbox_diode_plugin:
-              diode_username: "diode"
-              netbox_to_diode_client_secret: "diode" # セキュリティ?
+        plugins:
+          - netbox_diode_plugin
+        pluginsConfig:
+          netbox_diode_plugin:
+            diode_username: "diode"
+            netbox_to_diode_client_secret: "diode" # セキュリティ?
         
         # --- PostgreSQL subchart設定（PDB重複回避） ---
         postgresql:
