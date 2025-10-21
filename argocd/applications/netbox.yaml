@@ -29,10 +29,14 @@ spec:
         
         plugins:
           - netbox_diode_plugin
+          - netbox_bgp
         pluginsConfig:
           netbox_diode_plugin:
             diode_username: "diode"
             netbox_to_diode_client_secret: "diode" # セキュリティ?
+          netbox_bgp:
+            device_ext_page: "right"
+            top_level_menu: false
         
         # --- PostgreSQL subchart設定（PDB重複回避） ---
         postgresql:
