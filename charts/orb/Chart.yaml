@@ -1,0 +1,17 @@
+apiVersion: v2
+name: orb-agent
+description: A Helm chart for NetBox Labs Orb Agent on Kubernetes
+type: application
+version: 0.1.0
+appVersion: "latest"
+keywords:
+  - orb
+  - netbox
+  - monitoring
+  - network-discovery
+home: https://github.com/netboxlabs/orb-agent
+sources:
+  - https://github.com/netboxlabs/orb-agent
+maintainers:
+  - name: Platform Team
+    email: platform@example.com

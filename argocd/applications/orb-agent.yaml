@@ -1,0 +1,125 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: orb-agent
+  namespace: argocd
+spec:
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: netbox-orb
+  source:
+    repoURL: https://github.com/zinntikumugai/netbox-additional-plugin-apps.git
+    path: charts/orb
+    targetRevision: main
+    helm:
+      releaseName: orb-agent
+      values: |
+        # --- Global Configuration ---
+        global:
+          storageClass: truenas-nfs-csi
+
+        # --- Image Configuration ---
+        image:
+          repository: netboxlabs/orb-agent
+          tag: latest
+          pullPolicy: Always
+
+        # --- Diode Backend Configuration ---
+        diode:
+          # Diodeエンドポイント（Ingress-Nginx経由でgRPC接続）
+          target: "grpc://netbox-diode-ingress-nginx-controller.netbox-diode.svc.cluster.local:80/diode"
+
+        # --- Agent Configuration ---
+        agent:
+          name: "k8s-orb-agent"
+          policies:
+            networkDiscovery:
+              enabled: true
+              # 10分ごとにネットワークディスカバリーを実行
+              schedule: "*/10 * * * *"
+              targets:
+                # スキャン対象のネットワークCIDR
+                - "172.16.0.0/16"
+                - "192.168.10.0/24"
+            snmpDiscovery:
+              enabled: true
+              # SNMP Walk設定
+              schedule: "*/10 * * * *"
+              targets:
+                - host: "192.168.10.10"
+                  community: "public"
+                  version: "2c"
+
+        # --- Credentials Configuration ---
+        credentials:
+          # Secretを別途作成する場合はfalseに設定
+          create: true
+          secretName: "orb-diode-credentials"
+          # 本番環境では別途Sealed SecretsまたはVaultを使用
+          clientId: "diode"
+          clientSecret: "0123456789"
+
+        # --- Security Context Configuration ---
+        security:
+          runAsUser: 0
+          capabilities:
+            - NET_RAW
+            - NET_ADMIN
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          seccompProfile:
+            type: RuntimeDefault
+
+        # --- Service Account Configuration ---
+        serviceAccount:
+          create: true
+          annotations: {}
+
+        # --- RBAC Configuration ---
+        rbac:
+          create: true
+
+        # --- DaemonSet Configuration ---
+        daemonset:
+          updateStrategy:
+            type: RollingUpdate
+            rollingUpdate:
+              maxUnavailable: 1
+
+        # --- Resource Limits ---
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+
+        # --- Node Selection ---
+        # nodeSelector:
+        #   node-role.kubernetes.io/worker: "true"
+        # tolerations: []
+        # affinity: {}
+
+        # --- Network Policy ---
+        networkPolicy:
+          enabled: false  # 必要に応じて有効化
+          egress:
+            allowDNS: true
+            diodeEndpoint:
+              # 自動的にdiode.targetから抽出されますが、明示的に指定も可能
+              # host: "netbox-diode-ingress-nginx-controller.netbox-diode.svc.cluster.local"
+              # port: 80
+
+        # --- Pod Disruption Budget ---
+        pdb:
+          enabled: false  # 本番環境では有効化を推奨
+          minAvailable: 1
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

@@ -1,0 +1,189 @@
+# Default values for orb-agent.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# ============================================================================
+# Image Configuration
+# ============================================================================
+image:
+  repository: netboxlabs/orb-agent
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# Image pull secrets for private registries
+imagePullSecrets: []
+
+# ============================================================================
+# Diode Backend Configuration
+# ============================================================================
+diode:
+  # Target URL for Diode gRPC endpoint (REQUIRED)
+  # Example: grpc://diode.diode:80/diode
+  target: ""
+
+# ============================================================================
+# Agent Configuration
+# ============================================================================
+agent:
+  # Agent name that will be reported to Diode
+  name: k8s_orb_agent
+
+  # Orb agent policies configuration
+  policies:
+    networkDiscovery:
+      enabled: true
+      schedule: "*/10 * * * *"
+      # Network scope for discovery
+      targets:
+        - 10.0.0.0/24
+
+    snmpDiscovery:
+      enabled: false
+      schedule: "*/10 * * * *"
+      # SNMP targets for discovery
+      targets: []
+        # - host: "192.168.1.1"
+        #   community: "public"
+        #   version: "2c"
+
+# ============================================================================
+# Credentials Configuration
+# ============================================================================
+credentials:
+  # Create a new Secret resource
+  create: true
+
+  # Secret name to use (created if create=true, or reference existing)
+  secretName: orb-diode-credentials
+
+  # Client credentials (only used if create=true)
+  # SECURITY NOTE: Override these values in a separate values file
+  # or use sealed-secrets/SOPS for production
+  clientId: ""
+  clientSecret: ""
+
+# ============================================================================
+# Security Context Configuration
+# ============================================================================
+security:
+  # Run as root user (required for NET_RAW/NET_ADMIN capabilities)
+  runAsUser: 0
+
+  # Linux capabilities
+  capabilities:
+    - NET_RAW
+    - NET_ADMIN
+
+  # Security hardening
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+
+  # Seccomp profile
+  seccompProfile:
+    type: RuntimeDefault
+
+# ============================================================================
+# Service Account Configuration
+# ============================================================================
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+
+  # Annotations to add to the service account
+  annotations: {}
+
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# ============================================================================
+# RBAC Configuration
+# ============================================================================
+rbac:
+  # Specifies whether RBAC resources should be created
+  create: true
+
+# ============================================================================
+# DaemonSet Configuration
+# ============================================================================
+# Update strategy for DaemonSet
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 1
+
+# Pod labels
+podLabels: {}
+
+# Pod annotations
+podAnnotations: {}
+
+# Priority class name
+priorityClassName: ""
+
+# ============================================================================
+# Resource Limits and Requests
+# ============================================================================
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+# ============================================================================
+# Node Selection and Scheduling
+# ============================================================================
+# Node selector for pod assignment
+nodeSelector: {}
+
+# Tolerations for pod assignment
+tolerations: []
+
+# Affinity for pod assignment
+affinity: {}
+
+# ============================================================================
+# Network Policy Configuration
+# ============================================================================
+networkPolicy:
+  # Enable network policy
+  enabled: false
+
+  # Egress rules configuration
+  egress:
+    # Allow DNS
+    allowDNS: true
+
+    # Diode endpoint configuration for egress
+    # Will be parsed from diode.target if not specified
+    diodeEndpoint:
+      # Override host (extracted from diode.target if empty)
+      host: ""
+      # Override port (extracted from diode.target if empty)
+      port: 80
+
+# ============================================================================
+# Pod Disruption Budget Configuration
+# ============================================================================
+pdb:
+  # Enable PodDisruptionBudget
+  enabled: false
+
+  # Minimum available pods during disruptions
+  minAvailable: 1
+
+# ============================================================================
+# Additional Configuration
+# ============================================================================
+# Extra environment variables to add to the container
+extraEnv: []
+# - name: DEBUG
+#   value: "true"
+
+# Extra volumes to add to the pod
+extraVolumes: []
+
+# Extra volume mounts to add to the container
+extraVolumeMounts: []

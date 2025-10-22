@@ -1,0 +1,32 @@
+{{- if .Values.rbac.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "orb-agent.fullname" . }}
+  labels:
+    {{- include "orb-agent.labels" . | nindent 4 }}
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  resourceNames: [{{ include "orb-agent.secretName" . | quote }}]
+  verbs: ["get"]
+- apiGroups: [""]
+  resources: ["configmaps"]
+  resourceNames: [{{ printf "%s-config" (include "orb-agent.fullname" .) | quote }}]
+  verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "orb-agent.fullname" . }}
+  labels:
+    {{- include "orb-agent.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "orb-agent.fullname" . }}
+subjects:
+- kind: ServiceAccount
+  name: {{ include "orb-agent.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+{{- end }}
