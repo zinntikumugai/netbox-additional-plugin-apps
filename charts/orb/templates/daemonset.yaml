@@ -38,6 +38,41 @@ spec:
         runAsUser: {{ .Values.security.runAsUser }}
         runAsNonRoot: false
         fsGroup: {{ .Values.security.runAsUser }}
+      initContainers:
+      - name: config-init
+        image: busybox:latest
+        command:
+        - sh
+        - -c
+        - |
+          # Export environment variables for envsubst
+          export DIODE_CLIENT_ID="${DIODE_CLIENT_ID}"
+          export DIODE_CLIENT_SECRET="${DIODE_CLIENT_SECRET}"
+
+          # Use shell parameter expansion to replace variables in the config
+          sed -e "s/\${DIODE_CLIENT_ID}/${DIODE_CLIENT_ID}/g" \
+              -e "s/\${DIODE_CLIENT_SECRET}/${DIODE_CLIENT_SECRET}/g" \
+              /etc/orb-template/agent.yaml > /etc/orb-runtime/agent.yaml
+
+          echo "Configuration file generated successfully"
+          cat /etc/orb-runtime/agent.yaml
+        env:
+        - name: DIODE_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "orb-agent.secretName" . }}
+              key: DIODE_CLIENT_ID
+        - name: DIODE_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "orb-agent.secretName" . }}
+              key: DIODE_CLIENT_SECRET
+        volumeMounts:
+        - name: config-template
+          mountPath: /etc/orb-template
+          readOnly: true
+        - name: config-runtime
+          mountPath: /etc/orb-runtime
       containers:
       - name: orb-agent
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -57,37 +92,33 @@ spec:
         args:
         - "run"
         - "-c"
-        - "/etc/orb/agent.yaml"
-        env:
-        - name: DIODE_CLIENT_ID
-          valueFrom:
-            secretKeyRef:
-              name: {{ include "orb-agent.secretName" . }}
-              key: DIODE_CLIENT_ID
-        - name: DIODE_CLIENT_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: {{ include "orb-agent.secretName" . }}
-              key: DIODE_CLIENT_SECRET
+        - "/etc/orb-runtime/agent.yaml"
         {{- with .Values.extraEnv }}
+        env:
         {{- toYaml . | nindent 8 }}
         {{- end }}
         volumeMounts:
-        - name: config
-          mountPath: /etc/orb
+        - name: config-runtime
+          mountPath: /etc/orb-runtime
           readOnly: true
         - name: run
           mountPath: /var/run
+        - name: tmp
+          mountPath: /tmp
         {{- with .Values.extraVolumeMounts }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
         resources:
           {{- toYaml .Values.resources | nindent 10 }}
       volumes:
-      - name: config
+      - name: config-template
         configMap:
           name: {{ include "orb-agent.fullname" . }}-config
+      - name: config-runtime
+        emptyDir: {}
       - name: run
+        emptyDir: {}
+      - name: tmp
         emptyDir: {}
       {{- with .Values.extraVolumes }}
       {{- toYaml . | nindent 6 }}
