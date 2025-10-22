@@ -39,9 +39,17 @@ spec:
               # 10分ごとにネットワークディスカバリーを実行
               schedule: "*/10 * * * *"
               targets:
-                # スキャン対象のネットワークCIDR（環境に応じて調整）
-                - "10.0.0.0/24"
-                # - "192.168.1.0/24"
+                # スキャン対象のネットワークCIDR
+                - "172.16.0.0/16"
+                - "192.168.10.0/24"
+            snmpDiscovery:
+              enabled: true
+              # SNMP Walk設定
+              schedule: "*/10 * * * *"
+              targets:
+                - host: "192.168.10.10"
+                  community: "public"
+                  version: "2c"
 
         # --- Credentials Configuration ---
         credentials:

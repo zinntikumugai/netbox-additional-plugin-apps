@@ -37,6 +37,15 @@ agent:
       targets:
         - 10.0.0.0/24
 
+    snmpDiscovery:
+      enabled: false
+      schedule: "*/10 * * * *"
+      # SNMP targets for discovery
+      targets: []
+        # - host: "192.168.1.1"
+        #   community: "public"
+        #   version: "2c"
+
 # ============================================================================
 # Credentials Configuration
 # ============================================================================

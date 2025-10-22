@@ -14,8 +14,9 @@ data:
             client_id: "${DIODE_CLIENT_ID}"
             client_secret: "${DIODE_CLIENT_SECRET}"
             agent_name: {{ .Values.agent.name | quote }}
-      {{- if .Values.agent.policies.networkDiscovery.enabled }}
+      {{- if or .Values.agent.policies.networkDiscovery.enabled .Values.agent.policies.snmpDiscovery.enabled }}
       policies:
+        {{- if .Values.agent.policies.networkDiscovery.enabled }}
         network_discovery:
           basic:
             schedule: {{ .Values.agent.policies.networkDiscovery.schedule | quote }}
@@ -24,4 +25,16 @@ data:
               {{- range .Values.agent.policies.networkDiscovery.targets }}
                 - {{ . | quote }}
               {{- end }}
+        {{- end }}
+        {{- if .Values.agent.policies.snmpDiscovery.enabled }}
+        snmp_discovery:
+          basic:
+            schedule: {{ .Values.agent.policies.snmpDiscovery.schedule | quote }}
+            targets:
+            {{- range .Values.agent.policies.snmpDiscovery.targets }}
+              - host: {{ .host | quote }}
+                community: {{ .community | quote }}
+                version: {{ .version | quote }}
+            {{- end }}
+        {{- end }}
       {{- end }}
