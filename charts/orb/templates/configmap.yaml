@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "orb-agent.fullname" . }}-config
+  labels:
+    {{- include "orb-agent.labels" . | nindent 4 }}
+data:
+  agent.yaml: |
+    orb:
+      backends:
+        common:
+          diode:
+            target: {{ .Values.diode.target | quote }}
+            client_id: "${DIODE_CLIENT_ID}"
+            client_secret: "${DIODE_CLIENT_SECRET}"
+            agent_name: {{ .Values.agent.name | quote }}
+      {{- if .Values.agent.policies.networkDiscovery.enabled }}
+      policies:
+        network_discovery:
+          basic:
+            schedule: {{ .Values.agent.policies.networkDiscovery.schedule | quote }}
+            scope:
+              targets:
+              {{- range .Values.agent.policies.networkDiscovery.targets }}
+                - {{ . | quote }}
+              {{- end }}
+      {{- end }}

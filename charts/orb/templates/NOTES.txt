@@ -1,0 +1,55 @@
+Thank you for installing {{ .Chart.Name }}!
+
+Release name: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+
+The Orb Agent has been deployed as a DaemonSet and will run on each node in your cluster.
+
+To verify the deployment:
+
+1. Check the DaemonSet status:
+   kubectl get daemonset {{ include "orb-agent.fullname" . }} -n {{ .Release.Namespace }}
+
+2. List all Orb Agent pods:
+   kubectl get pods -l app.kubernetes.io/name={{ include "orb-agent.name" . }} -n {{ .Release.Namespace }} -o wide
+
+3. View logs from a specific pod:
+   kubectl logs -l app.kubernetes.io/name={{ include "orb-agent.name" . }} -n {{ .Release.Namespace }} --tail=50
+
+4. Check if the agent is connecting to Diode:
+   kubectl logs -l app.kubernetes.io/name={{ include "orb-agent.name" . }} -n {{ .Release.Namespace }} | grep -i diode
+
+Configuration:
+- Diode Target: {{ .Values.diode.target }}
+- Agent Name: {{ .Values.agent.name }}
+- Secret: {{ include "orb-agent.secretName" . }}
+{{- if .Values.networkPolicy.enabled }}
+- Network Policy: Enabled (egress restricted to Diode)
+{{- end }}
+
+Security Context:
+- Running as User: {{ .Values.security.runAsUser }}
+- Capabilities: {{ join ", " .Values.security.capabilities }}
+- hostNetwork: false (using NET_RAW/NET_ADMIN capabilities instead)
+
+{{- if not .Values.diode.target }}
+
+WARNING: diode.target is not configured!
+Please set the Diode endpoint in your values:
+
+  helm upgrade {{ .Release.Name }} {{ .Chart.Name }} \
+    --set diode.target=grpc://diode.diode:80/diode
+{{- end }}
+
+{{- if and .Values.credentials.create (or (not .Values.credentials.clientId) (not .Values.credentials.clientSecret)) }}
+
+WARNING: Credentials are not fully configured!
+Please provide clientId and clientSecret:
+
+  helm upgrade {{ .Release.Name }} {{ .Chart.Name }} \
+    --set credentials.clientId=YOUR_CLIENT_ID \
+    --set credentials.clientSecret=YOUR_CLIENT_SECRET
+{{- end }}
+
+For more information, visit:
+  https://github.com/netboxlabs/orb-agent

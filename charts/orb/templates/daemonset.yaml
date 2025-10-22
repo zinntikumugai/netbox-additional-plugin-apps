@@ -1,0 +1,102 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "orb-agent.fullname" . }}
+  labels:
+    {{- include "orb-agent.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "orb-agent.selectorLabels" . | nindent 6 }}
+  updateStrategy:
+    {{- toYaml .Values.updateStrategy | nindent 4 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- if .Values.credentials.create }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        {{- end }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "orb-agent.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "orb-agent.serviceAccountName" . }}
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName }}
+      {{- end }}
+      securityContext:
+        runAsUser: {{ .Values.security.runAsUser }}
+        runAsNonRoot: false
+        fsGroup: {{ .Values.security.runAsUser }}
+      containers:
+      - name: orb-agent
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        securityContext:
+          allowPrivilegeEscalation: {{ .Values.security.allowPrivilegeEscalation }}
+          readOnlyRootFilesystem: {{ .Values.security.readOnlyRootFilesystem }}
+          capabilities:
+            add:
+            {{- range .Values.security.capabilities }}
+            - {{ . }}
+            {{- end }}
+            drop:
+            - ALL
+          seccompProfile:
+            {{- toYaml .Values.security.seccompProfile | nindent 12 }}
+        args:
+        - "run"
+        - "-c"
+        - "/etc/orb/agent.yaml"
+        env:
+        - name: DIODE_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "orb-agent.secretName" . }}
+              key: DIODE_CLIENT_ID
+        - name: DIODE_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "orb-agent.secretName" . }}
+              key: DIODE_CLIENT_SECRET
+        {{- with .Values.extraEnv }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        volumeMounts:
+        - name: config
+          mountPath: /etc/orb
+          readOnly: true
+        {{- with .Values.extraVolumeMounts }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+      volumes:
+      - name: config
+        configMap:
+          name: {{ include "orb-agent.fullname" . }}-config
+      {{- with .Values.extraVolumes }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
