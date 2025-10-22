@@ -73,7 +73,8 @@ spec:
           create: true
           secretName: "orb-diode-credentials"
           # 本番環境では別途Sealed SecretsまたはVaultを使用
-          clientId: "diode"
+          # Diode OAuth2クライアント: diode-ingest (scope: diode:ingest)
+          clientId: "diode-ingest"
           clientSecret: "0123456789"
 
         # --- Security Context Configuration ---
