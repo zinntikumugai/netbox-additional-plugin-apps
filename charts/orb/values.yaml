@@ -28,11 +28,28 @@ agent:
   # Agent name that will be reported to Diode
   name: k8s_orb_agent
 
+  # Backend-specific configurations
+  backends:
+    networkDiscovery:
+      # host: "0.0.0.0"
+      # port: 8073
+      # logLevel: "INFO"
+    snmpDiscovery: {}
+
   # Orb agent policies configuration
   policies:
     networkDiscovery:
       enabled: true
       schedule: "*/10 * * * *"
+      # timeout: 5  # in minutes
+      # defaults:
+      #   description: "IP discovered by network discovery"
+      #   tags: ["net-discovery", "orb-agent"]
+      #   comments: "Auto-discovered"
+      # scope:
+      #   fastMode: true
+      #   timing: 3
+      #   icmpEcho: true
       # Network scope for discovery
       targets:
         - 10.0.0.0/24
@@ -40,11 +57,25 @@ agent:
     snmpDiscovery:
       enabled: false
       schedule: "*/10 * * * *"
+      # timeout: 120  # in seconds
+      # defaults:
+      #   tags: ["snmp-discovery", "orb"]
+      #   site: "datacenter-01"
       # SNMP targets for discovery
       targets: []
         # - host: "192.168.1.1"
-        #   community: "public"
-        #   version: "2c"
+        #   port: 161
+      # SNMP authentication configuration
+      authentication:
+        protocolVersion: "SNMPv2c"  # SNMPv2c or SNMPv3
+        community: "public"
+        # For SNMPv3, use:
+        # username: "snmpuser"
+        # securityLevel: "AuthPriv"  # NoAuthNoPriv, AuthNoPriv, or AuthPriv
+        # authProtocol: "SHA"        # SHA or MD5
+        # authPassphrase: "authpass"
+        # privProtocol: "AES"        # AES or DES
+        # privPassphrase: "privpass"
 
 # ============================================================================
 # Credentials Configuration

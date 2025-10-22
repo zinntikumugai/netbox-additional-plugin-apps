@@ -76,6 +76,8 @@ spec:
         - name: config
           mountPath: /etc/orb
           readOnly: true
+        - name: run
+          mountPath: /var/run
         {{- with .Values.extraVolumeMounts }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -85,6 +87,8 @@ spec:
       - name: config
         configMap:
           name: {{ include "orb-agent.fullname" . }}-config
+      - name: run
+        emptyDir: {}
       {{- with .Values.extraVolumes }}
       {{- toYaml . | nindent 6 }}
       {{- end }}

@@ -33,11 +33,23 @@ spec:
         # --- Agent Configuration ---
         agent:
           name: "k8s-orb-agent"
+          backends:
+            networkDiscovery:
+              logLevel: "INFO"
+            snmpDiscovery: {}
           policies:
             networkDiscovery:
               enabled: true
               # 10分ごとにネットワークディスカバリーを実行
               schedule: "*/10 * * * *"
+              timeout: 5
+              defaults:
+                description: "IP discovered by network discovery"
+                tags: ["net-discovery", "orb-agent", "k8s"]
+              scope:
+                fastMode: true
+                timing: 3
+                icmpEcho: true
               targets:
                 # スキャン対象のネットワークCIDR
                 - "172.16.0.0/16"
@@ -46,10 +58,14 @@ spec:
               enabled: true
               # SNMP Walk設定
               schedule: "*/10 * * * *"
+              timeout: 120
+              defaults:
+                tags: ["snmp-discovery", "orb-agent", "k8s"]
               targets:
                 - host: "192.168.10.10"
-                  community: "public"
-                  version: "2c"
+              authentication:
+                protocolVersion: "SNMPv2c"
+                community: "public"
 
         # --- Credentials Configuration ---
         credentials:

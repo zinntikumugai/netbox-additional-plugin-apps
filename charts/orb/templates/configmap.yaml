@@ -8,6 +8,17 @@ data:
   agent.yaml: |
     orb:
       backends:
+        {{- if .Values.agent.policies.networkDiscovery.enabled }}
+        network_discovery:
+          {{- with .Values.agent.backends.networkDiscovery }}
+          host: {{ .host | default "0.0.0.0" | quote }}
+          port: {{ .port | default 8073 }}
+          log_level: {{ .logLevel | default "INFO" | quote }}
+          {{- end }}
+        {{- end }}
+        {{- if .Values.agent.policies.snmpDiscovery.enabled }}
+        snmp_discovery:
+        {{- end }}
         common:
           diode:
             target: {{ .Values.diode.target | quote }}
@@ -19,22 +30,65 @@ data:
         {{- if .Values.agent.policies.networkDiscovery.enabled }}
         network_discovery:
           basic:
-            schedule: {{ .Values.agent.policies.networkDiscovery.schedule | quote }}
+            config:
+              schedule: {{ .Values.agent.policies.networkDiscovery.schedule | quote }}
+              {{- with .Values.agent.policies.networkDiscovery.timeout }}
+              timeout: {{ . }}
+              {{- end }}
+              {{- with .Values.agent.policies.networkDiscovery.defaults }}
+              defaults:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
             scope:
               targets:
               {{- range .Values.agent.policies.networkDiscovery.targets }}
                 - {{ . | quote }}
               {{- end }}
+              {{- with .Values.agent.policies.networkDiscovery.scope }}
+              {{- if .fastMode }}
+              fast_mode: {{ .fastMode }}
+              {{- end }}
+              {{- if .timing }}
+              timing: {{ .timing }}
+              {{- end }}
+              {{- if .icmpEcho }}
+              icmp_echo: {{ .icmpEcho }}
+              {{- end }}
+              {{- end }}
         {{- end }}
         {{- if .Values.agent.policies.snmpDiscovery.enabled }}
         snmp_discovery:
           basic:
-            schedule: {{ .Values.agent.policies.snmpDiscovery.schedule | quote }}
-            targets:
-            {{- range .Values.agent.policies.snmpDiscovery.targets }}
-              - host: {{ .host | quote }}
-                community: {{ .community | quote }}
-                version: {{ .version | quote }}
-            {{- end }}
+            config:
+              schedule: {{ .Values.agent.policies.snmpDiscovery.schedule | quote }}
+              {{- with .Values.agent.policies.snmpDiscovery.timeout }}
+              timeout: {{ . }}
+              {{- end }}
+              {{- with .Values.agent.policies.snmpDiscovery.defaults }}
+              defaults:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+            scope:
+              targets:
+              {{- range .Values.agent.policies.snmpDiscovery.targets }}
+                - host: {{ .host | quote }}
+                  {{- if .port }}
+                  port: {{ .port }}
+                  {{- end }}
+              {{- end }}
+              authentication:
+                protocol_version: {{ .Values.agent.policies.snmpDiscovery.authentication.protocolVersion | quote }}
+                {{- if eq .Values.agent.policies.snmpDiscovery.authentication.protocolVersion "SNMPv2c" }}
+                community: {{ .Values.agent.policies.snmpDiscovery.authentication.community | quote }}
+                {{- else }}
+                username: {{ .Values.agent.policies.snmpDiscovery.authentication.username | quote }}
+                security_level: {{ .Values.agent.policies.snmpDiscovery.authentication.securityLevel | quote }}
+                auth_protocol: {{ .Values.agent.policies.snmpDiscovery.authentication.authProtocol | quote }}
+                auth_passphrase: {{ .Values.agent.policies.snmpDiscovery.authentication.authPassphrase | quote }}
+                {{- if eq .Values.agent.policies.snmpDiscovery.authentication.securityLevel "AuthPriv" }}
+                priv_protocol: {{ .Values.agent.policies.snmpDiscovery.authentication.privProtocol | quote }}
+                priv_passphrase: {{ .Values.agent.policies.snmpDiscovery.authentication.privPassphrase | quote }}
+                {{- end }}
+                {{- end }}
         {{- end }}
       {{- end }}
