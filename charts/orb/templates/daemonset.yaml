@@ -40,19 +40,20 @@ spec:
         fsGroup: {{ .Values.security.runAsUser }}
       initContainers:
       - name: config-init
-        image: busybox:latest
+        image: alpine:latest
         command:
         - sh
         - -c
         - |
+          # Install envsubst for safe environment variable substitution
+          apk add --no-cache gettext
+
           # Export environment variables for envsubst
           export DIODE_CLIENT_ID="${DIODE_CLIENT_ID}"
           export DIODE_CLIENT_SECRET="${DIODE_CLIENT_SECRET}"
 
-          # Use shell parameter expansion to replace variables in the config
-          sed -e "s/\${DIODE_CLIENT_ID}/${DIODE_CLIENT_ID}/g" \
-              -e "s/\${DIODE_CLIENT_SECRET}/${DIODE_CLIENT_SECRET}/g" \
-              /etc/orb-template/agent.yaml > /etc/orb-runtime/agent.yaml
+          # Use envsubst to safely replace variables in the config
+          envsubst < /etc/orb-template/agent.yaml > /etc/orb-runtime/agent.yaml
 
           echo "Configuration file generated successfully"
           cat /etc/orb-runtime/agent.yaml
