@@ -105,6 +105,8 @@ spec:
           mountPath: /var/run
         - name: tmp
           mountPath: /tmp
+        - name: geo-db
+          mountPath: /geo-db
         {{- with .Values.extraVolumeMounts }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -119,6 +121,8 @@ spec:
       - name: run
         emptyDir: {}
       - name: tmp
+        emptyDir: {}
+      - name: geo-db
         emptyDir: {}
       {{- with .Values.extraVolumes }}
       {{- toYaml . | nindent 6 }}
