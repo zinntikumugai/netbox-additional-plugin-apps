@@ -10,14 +10,13 @@ data:
       backends:
         {{- if .Values.agent.policies.networkDiscovery.enabled }}
         network_discovery:
-          {{- with .Values.agent.backends.networkDiscovery }}
-          host: {{ .host | default "0.0.0.0" | quote }}
-          port: {{ .port | default 8073 }}
-          log_level: {{ .logLevel | default "INFO" | quote }}
-          {{- end }}
+          {{- $backend := .Values.agent.backends.networkDiscovery | default (dict) }}
+          host: {{ $backend.host | default "0.0.0.0" | quote }}
+          port: {{ $backend.port | default 8073 }}
+          log_level: {{ $backend.logLevel | default "INFO" | quote }}
         {{- end }}
         {{- if .Values.agent.policies.snmpDiscovery.enabled }}
-        snmp_discovery:
+        snmp_discovery: {}
         {{- end }}
         common:
           diode:
@@ -44,16 +43,15 @@ data:
               {{- range .Values.agent.policies.networkDiscovery.targets }}
                 - {{ . | quote }}
               {{- end }}
-              {{- with .Values.agent.policies.networkDiscovery.scope }}
-              {{- if .fastMode }}
-              fast_mode: {{ .fastMode }}
+              {{- $scope := .Values.agent.policies.networkDiscovery.scope | default (dict) }}
+              {{- if $scope.fastMode }}
+              fast_mode: {{ $scope.fastMode }}
               {{- end }}
-              {{- if .timing }}
-              timing: {{ .timing }}
+              {{- if $scope.timing }}
+              timing: {{ $scope.timing }}
               {{- end }}
-              {{- if .icmpEcho }}
-              icmp_echo: {{ .icmpEcho }}
-              {{- end }}
+              {{- if $scope.icmpEcho }}
+              icmp_echo: {{ $scope.icmpEcho }}
               {{- end }}
         {{- end }}
         {{- if .Values.agent.policies.snmpDiscovery.enabled }}
