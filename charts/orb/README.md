@@ -61,7 +61,7 @@ This Helm chart deploys the NetBox Labs Orb Agent as a DaemonSet on Kubernetes. 
 
 ### Using Existing Secrets
 
-If you already have a Secret with credentials:
+If you already have a Secret with credentials or want to manage secrets manually:
 
 ```yaml
 credentials:
@@ -72,6 +72,16 @@ credentials:
 The Secret must contain:
 - `DIODE_CLIENT_ID`
 - `DIODE_CLIENT_SECRET`
+
+**For ArgoCD deployments**, set `credentials.create: false` in the Application manifest to enable manual Secret management. This allows you to update secrets without triggering ArgoCD sync:
+
+```bash
+# Apply the Secret manually
+kubectl apply -f argocd/applications/orb-agent-secrets.yaml
+
+# Restart Pods to pick up changes
+kubectl rollout restart daemonset/orb-agent -n netbox-orb
+```
 
 ### Secure Secret Management
 

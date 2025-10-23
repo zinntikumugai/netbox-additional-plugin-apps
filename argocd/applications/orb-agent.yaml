@@ -69,13 +69,10 @@ spec:
 
         # --- Credentials Configuration ---
         credentials:
-          # Secretを別途作成する場合はfalseに設定
-          create: true
+          # Secretを別途手動管理するため false に設定
+          # argocd/applications/orb-agent-secrets.yaml を手動適用してください
+          create: false
           secretName: "orb-diode-credentials"
-          # 本番環境では別途Sealed SecretsまたはVaultを使用
-          # Diode OAuth2クライアント: diode-ingest (scope: diode:ingest)
-          clientId: "diode-ingest"
-          clientSecret: "0123456789"
 
         # --- Security Context Configuration ---
         security:
