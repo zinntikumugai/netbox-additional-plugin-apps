@@ -105,10 +105,10 @@ spec:
               "helm.sh/hook-weight": "1"
               "helm.sh/hook-delete-policy": hook-succeeded
 
-        # Reconciler configuration
-        reconciler:
-          env:
-            NETBOX_DIODE_PLUGIN_API_BASE_URL: "http://netbox.netbox2.svc.cluster.local/api/plugins/diode"
+        # Diode Reconciler configuration
+        diodeReconciler:
+          config:
+            netboxDiodePluginApiBaseUrl: "http://netbox.netbox2.svc.cluster.local/api/plugins/diode"
         
   syncPolicy:
     automated:
