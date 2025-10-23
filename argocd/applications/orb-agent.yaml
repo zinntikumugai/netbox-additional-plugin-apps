@@ -42,17 +42,21 @@ spec:
               enabled: true
               # 10分ごとにネットワークディスカバリーを実行
               schedule: "*/10 * * * *"
-              timeout: 5
+              timeout: 10
               defaults:
                 description: "IP discovered by network discovery"
                 tags: ["net-discovery", "orb-agent", "k8s"]
               scope:
                 fastMode: true
-                timing: 3
+                timing: 4
                 icmpEcho: true
               targets:
                 # スキャン対象のネットワークCIDR
-                - "172.16.0.0/16"
+                - "172.16.1.0/24"
+                - "172.16.11.0/24"
+                - "172.16.101.0/24"
+                - "172.16.120.0/24"
+                - "172.16.150.0/24"
                 - "192.168.10.0/24"
             snmpDiscovery:
               enabled: true
