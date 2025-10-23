@@ -57,14 +57,39 @@ agent:
     snmpDiscovery:
       enabled: false
       schedule: "*/10 * * * *"
-      # timeout: 120  # in seconds
+      # Policy timeout in seconds (default: 120)
+      # timeout: 120
+      # SNMP operation timeout in seconds (default: 5)
+      # snmpTimeout: 5
+      # Retry count for SNMP operations (default: 0)
+      # retries: 0
+      # Directory for device model lookup files
+      # lookupExtensionsDir: ""
       # defaults:
       #   tags: ["snmp-discovery", "orb"]
       #   site: "datacenter-01"
+      #   location: "rack-42"
+      #   role: "network"
+      #   # IP Address defaults
+      #   ipAddress:
+      #     description: "SNMP discovered IP"
+      #     role: "management"
+      #     tenant: "network-ops"
+      #     vrf: "management"
+      #   # Interface defaults
+      #   interface:
+      #     description: "Auto-discovered interface"
+      #     ifType: "ethernet"
+      #   # Device defaults
+      #   device:
+      #     description: "SNMP discovered device"
+      #     comments: "Automatically discovered via SNMP"
       # SNMP targets for discovery
       targets: []
         # - host: "192.168.1.1"
-        #   port: 161
+        # - host: "192.168.1.254"
+      # SNMP port (applies to all targets, default: 161)
+      port: 161
       # SNMP authentication configuration
       authentication:
         protocolVersion: "SNMPv2c"  # SNMPv2c or SNMPv3
