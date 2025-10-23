@@ -210,13 +210,22 @@ kubectl get secret orb-diode-credentials -n netbox-orb -o yaml
 - **scope.timing**: Nmap timing template (0-5, higher = faster but more detectable)
 
 ### SNMP Discovery Settings
+- **schedule**: Cron expression for SNMP discovery runs
+- **timeout**: Policy timeout in seconds (default: 120)
+- **snmpTimeout**: SNMP operation timeout in seconds (default: 5)
+- **retries**: Retry count for SNMP operations (default: 0)
+- **targets**: List of SNMP target hosts (e.g., `[{host: "192.168.1.1"}, {host: "192.168.1.254"}]`)
+- **port**: SNMP port applied to ALL targets (default: 161) - configured at scope level, not per-target
 - **authentication.protocolVersion**: `SNMPv2c` or `SNMPv3`
 - **authentication.community**: Community string for SNMPv2c
 - For SNMPv3: username, securityLevel (NoAuthNoPriv/AuthNoPriv/AuthPriv), authProtocol/Passphrase, privProtocol/Passphrase
+- **defaults**: Can include general tags/site/location/role, plus nested structures for ipAddress, interface, and device entities
 
 ## References
 
 - NetBox Diode Plugin: https://docs.netboxlabs.com/orb
 - Orb Agent: https://github.com/netboxlabs/orb-agent
+- Orb Agent Network Discovery Docs: https://github.com/netboxlabs/orb-agent/blob/develop/docs/backends/network_discovery.md
+- Orb Agent SNMP Discovery Docs: https://github.com/netboxlabs/orb-agent/blob/develop/docs/backends/snmp_discovery.md
 - NetBox BGP Plugin: https://github.com/netbox-community/netbox-bgp
 - Helm Chart README: `charts/orb/README.md` (comprehensive deployment guide)
