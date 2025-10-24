@@ -62,22 +62,22 @@ spec:
 
           ldap:
             # LDAPサーバー設定（環境に合わせて変更してください）
-            serverUri: "ldap://ldap.example.com:389"
-            startTls: true
+            serverUri: "ldap.service.z1n.in:389"
+            startTls: false
             ignoreCertErrors: false
 
             # Bind認証情報
             # bindPasswordは netbox-app-secret の ldap_bind_password キーから自動読み込み
-            bindDn: "CN=netbox,OU=Service Accounts,DC=example,DC=com"
+            bindDn: "cn=admin,dc=zin3,dc=cc"
 
             # ユーザー検索設定
-            userSearchBaseDn: "OU=Users,DC=example,DC=com"
-            userSearchAttr: "sAMAccountName"  # Active Directoryの場合
-            # userDnTemplate: "uid=%(user)s,ou=users,dc=example,dc=com"  # 固定DN形式の場合
+            userSearchBaseDn: "OU=people,DC=zin3,DC=cc"
+            # userSearchAttr: "sAMAccountName"  # Active Directoryの場合
+            userDnTemplate: "uid=%(user)s,ou=people,dc=zin3,dc=cc"  # 固定DN形式の場合
 
             # グループ検索設定
-            groupSearchBaseDn: "OU=Groups,DC=example,DC=com"
-            groupSearchClass: "group"  # Active Directoryの場合
+            groupSearchBaseDn: "DC=zin3,DC=cc"
+            groupSearchClass: "(objectClass=groupOfNames)"  # Active Directoryの場合
             groupType: "GroupOfNamesType"
 
             # 権限マッピング（必要に応じてコメント解除して設定）
