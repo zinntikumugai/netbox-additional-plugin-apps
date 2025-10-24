@@ -127,6 +127,19 @@ The Orb Agent chart deploys a DaemonSet that runs network and SNMP discovery:
 - `netbox_diode_plugin.diode_target_override`: Points to Ingress-Nginx controller for gRPC
 - `netbox_bgp`: Enables BGP peering management in NetBox
 
+**LDAP Authentication** (argocd/applications/netbox.yaml):
+- `superuser.existingSecret`: References `netbox-app-secret` for secret_key and LDAP credentials
+- `remoteAuth.enabled`: Enables LDAP authentication backend
+- `remoteAuth.ldap`: LDAP/Active Directory configuration
+  - `serverUri`: LDAP server endpoint (ldap:// or ldaps://)
+  - `bindDn`: Service account DN for LDAP queries
+  - `bindPassword`: Auto-loaded from `netbox-app-secret.ldap_bind_password`
+  - `userSearchBaseDn`: Base DN for user searches
+  - `groupSearchBaseDn`: Base DN for group searches
+  - `autoCreateUser`: Automatically create NetBox users on first LDAP login
+  - `groupSyncEnabled`: Sync LDAP groups with NetBox permissions
+- Secret template: `argocd/applications/netbox-app-secret.yaml` (manual kubectl apply required)
+
 ### Diode Architecture
 
 **Component Communication**:
@@ -175,6 +188,37 @@ agent:
 1. Modify `docker/netbox-custom/Dockerfile` to change plugin versions
 2. Build and push new image
 3. Image pull policy is `Always`, so restart NetBox pods or update tag
+
+### Configuring NetBox LDAP Authentication
+
+1. Update LDAP server settings in `argocd/applications/netbox.yaml`:
+   - `remoteAuth.ldap.serverUri`: Your LDAP/AD server
+   - `remoteAuth.ldap.bindDn`: Service account DN
+   - `remoteAuth.ldap.userSearchBaseDn`: User search base
+   - `remoteAuth.ldap.groupSearchBaseDn`: Group search base
+
+2. Generate and encode credentials:
+   ```bash
+   # Generate NetBox secret key
+   python3 -c 'import secrets; print(secrets.token_urlsafe(50))'
+
+   # Encode secret key
+   echo -n 'your-generated-secret-key' | base64
+
+   # Encode LDAP bind password
+   echo -n 'your-ldap-bind-password' | base64
+   ```
+
+3. Update `argocd/applications/netbox-app-secret.yaml` with encoded values
+
+4. Apply the secret manually:
+   ```bash
+   kubectl apply -f argocd/applications/netbox-app-secret.yaml
+   ```
+
+5. ArgoCD will auto-sync NetBox with new LDAP configuration
+
+6. Test LDAP login at NetBox UI with AD credentials
 
 ### Troubleshooting Orb Agent
 
