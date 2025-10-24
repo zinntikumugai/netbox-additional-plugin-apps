@@ -39,16 +39,11 @@ spec:
             device_ext_page: "right"
             top_level_menu: false
 
-        # --- Superuser設定（Secret参照） ---
-        superuser:
-          name: admin
-          email: admin@example.com
-          # パスワードとSecret Keyは netbox-app-secret から読み込み
-          existingSecret: "netbox-app-secret"
-
         # --- LDAP認証設定 ---
-        # 事前準備: argocd/applications/netbox-app-secret.yaml を適用
-        #   kubectl apply -f argocd/applications/netbox-app-secret.yaml
+        # 注意: ldap_bind_password は Helm が自動生成する netbox-config Secret に含まれます
+        # 既存の netbox-config Secret を直接更新してください:
+        #   kubectl edit secret netbox-config -n netbox2
+        #   ldap_bind_password: <base64-encoded-password>
         remoteAuth:
           enabled: true
           backends:
