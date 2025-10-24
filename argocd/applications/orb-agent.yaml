@@ -65,8 +65,19 @@ spec:
               timeout: 120
               defaults:
                 tags: ["snmp-discovery", "orb-agent", "k8s"]
+                # エンティティごとのデフォルト設定
+                device:
+                  description: "SNMP discovered device"
+                  comments: "Automatically discovered via Orb Agent"
+                interface:
+                  description: "SNMP discovered interface"
+                  if_type: "other"  # NetBox required field
+                ip_address:
+                  description: "SNMP discovered IP address"
+                  role: "management"
               targets:
                 - host: "192.168.10.10"
+                - host: "172.16.1.254"
               authentication:
                 protocolVersion: "SNMPv2c"
                 community: "public"
