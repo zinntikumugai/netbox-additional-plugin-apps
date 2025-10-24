@@ -38,7 +38,64 @@ spec:
           netbox_bgp:
             device_ext_page: "right"
             top_level_menu: false
-        
+
+        # --- Superuser設定（Secret参照） ---
+        superuser:
+          name: admin
+          email: admin@example.com
+          # パスワードとSecret Keyは netbox-app-secret から読み込み
+          existingSecret: "netbox-app-secret"
+
+        # --- LDAP認証設定 ---
+        # 事前準備: argocd/applications/netbox-app-secret.yaml を適用
+        #   kubectl apply -f argocd/applications/netbox-app-secret.yaml
+        remoteAuth:
+          enabled: true
+          backends:
+            - netbox.authentication.LDAPBackend
+          autoCreateUser: true
+          autoCreateGroups: false
+          defaultGroups: []
+          groupSyncEnabled: true
+          superuserGroups: []
+          staffGroups: []
+
+          ldap:
+            # LDAPサーバー設定（環境に合わせて変更してください）
+            serverUri: "ldap://ldap.example.com:389"
+            startTls: true
+            ignoreCertErrors: false
+
+            # Bind認証情報
+            # bindPasswordは netbox-app-secret の ldap_bind_password キーから自動読み込み
+            bindDn: "CN=netbox,OU=Service Accounts,DC=example,DC=com"
+
+            # ユーザー検索設定
+            userSearchBaseDn: "OU=Users,DC=example,DC=com"
+            userSearchAttr: "sAMAccountName"  # Active Directoryの場合
+            # userDnTemplate: "uid=%(user)s,ou=users,dc=example,dc=com"  # 固定DN形式の場合
+
+            # グループ検索設定
+            groupSearchBaseDn: "OU=Groups,DC=example,DC=com"
+            groupSearchClass: "group"  # Active Directoryの場合
+            groupType: "GroupOfNamesType"
+
+            # 権限マッピング（必要に応じてコメント解除して設定）
+            # requireGroupDn: ["CN=NetBox Users,OU=Groups,DC=example,DC=com"]
+            # isAdminDn: ["CN=NetBox Admins,OU=Groups,DC=example,DC=com"]
+            # isSuperUserDn: ["CN=NetBox SuperUsers,OU=Groups,DC=example,DC=com"]
+
+            # グループ同期設定
+            findGroupPerms: true
+            mirrorGroups: true
+            mirrorGroupsExcept: []
+            cacheTimeout: 3600
+
+            # 属性マッピング
+            attrFirstName: "givenName"
+            attrLastName: "sn"
+            attrMail: "mail"
+
         # --- PostgreSQL subchart設定（PDB重複回避） ---
         postgresql:
           enabled: true
