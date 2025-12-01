@@ -44,7 +44,7 @@ spec:
               schedule: "*/10 * * * *"
               timeout: 10
               defaults:
-                description: "IP discovered by network discovery"
+                # description: "IP discovered by network discovery"
                 tags: ["net-discovery", "orb-agent", "k8s"]
               scope:
                 fastMode: true
