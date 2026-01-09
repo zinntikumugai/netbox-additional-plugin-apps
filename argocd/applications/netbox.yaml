@@ -91,6 +91,38 @@ spec:
             attrLastName: "sn"
             attrMail: "mail"
 
+        # --- NetBoxコンテナのリソース設定 ---
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+
+        # --- Worker設定 ---
+        worker:
+          enabled: true
+          replicaCount: 1
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+
+        # --- Housekeeping設定 ---
+        housekeeping:
+          enabled: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+
         # --- PostgreSQL subchart設定（PDB重複回避） ---
         postgresql:
           enabled: true
@@ -108,6 +140,13 @@ spec:
             podLabels:
               app.z1n.in/stack: netbox
               app.z1n.in/component: postgresql
+            resources:
+              requests:
+                cpu: 100m
+                memory: 256Mi
+              limits:
+                cpu: 500m
+                memory: 512Mi
             # Helmチャートのデフォルトサービスを無効化
             service:
               enabled: false

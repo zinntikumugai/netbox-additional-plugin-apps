@@ -15,6 +15,16 @@ spec:
     helm:
       releaseName: netbox-diode
       values: |
+        # Diode Server configuration
+        diodeServer:
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+
         # PostgreSQL configuration using existing PVC
         postgresql:
           enabled: true
@@ -30,6 +40,13 @@ spec:
             podLabels:
               app.z1n.in/stack: diode
               app.z1n.in/component: postgresql
+            resources:
+              requests:
+                cpu: 50m
+                memory: 128Mi
+              limits:
+                cpu: 250m
+                memory: 256Mi
             persistence:
               enabled: true
               existingClaim: "data-netbox-postgresql-0"
@@ -75,6 +92,13 @@ spec:
             podLabels:
               app.z1n.in/stack: diode
               app.z1n.in/component: redis-master
+            resources:
+              requests:
+                cpu: 50m
+                memory: 128Mi
+              limits:
+                cpu: 250m
+                memory: 256Mi
             persistence:
               enabled: true
               existingClaim: "redis-data-netbox-redis-master-0"
@@ -86,6 +110,13 @@ spec:
             podLabels:
               app.z1n.in/stack: diode
               app.z1n.in/component: redis-replica
+            resources:
+              requests:
+                cpu: 50m
+                memory: 128Mi
+              limits:
+                cpu: 250m
+                memory: 256Mi
             persistence:
               enabled: true
               existingClaim: "redis-data-netbox-redis-replica-0"
@@ -99,6 +130,13 @@ spec:
             automigration:
               enabled: true
             dev: true
+            resources:
+              requests:
+                cpu: 50m
+                memory: 128Mi
+              limits:
+                cpu: 250m
+                memory: 256Mi
           job:
             annotations:
               "helm.sh/hook": post-install,post-upgrade
@@ -109,6 +147,13 @@ spec:
         diodeReconciler:
           config:
             netboxDiodePluginApiBaseUrl: "http://netbox.netbox2.svc.cluster.local/api/plugins/diode"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
         
   syncPolicy:
     automated:
