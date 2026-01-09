@@ -95,10 +95,10 @@ spec:
         resources:
           requests:
             cpu: 100m
-            memory: 256Mi
-          limits:
-            cpu: 500m
             memory: 512Mi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
 
         # --- Worker設定 ---
         worker:
@@ -107,10 +107,10 @@ spec:
           resources:
             requests:
               cpu: 50m
-              memory: 128Mi
+              memory: 256Mi
             limits:
               cpu: 250m
-              memory: 256Mi
+              memory: 512Mi
 
         # --- Housekeeping設定 ---
         housekeeping:
@@ -118,10 +118,10 @@ spec:
           resources:
             requests:
               cpu: 50m
-              memory: 128Mi
+              memory: 256Mi
             limits:
               cpu: 250m
-              memory: 256Mi
+              memory: 512Mi
 
         # --- PostgreSQL subchart設定（PDB重複回避） ---
         postgresql:
@@ -143,10 +143,10 @@ spec:
             resources:
               requests:
                 cpu: 100m
-                memory: 256Mi
+                memory: 512Mi
               limits:
                 cpu: 500m
-                memory: 512Mi
+                memory: 1Gi
             # Helmチャートのデフォルトサービスを無効化
             service:
               enabled: false
