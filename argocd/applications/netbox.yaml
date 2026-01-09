@@ -39,6 +39,20 @@ spec:
             device_ext_page: "right"
             top_level_menu: false
 
+        # --- パフォーマンス設定（OOMKilled対策） ---
+        # Unitワーカープロセス数を制限
+        unitConfig:
+          processes: 2
+          max_requests: 500
+          
+        # データベース接続プールを最適化
+        extraConfig:
+          - secret:
+              secretName: netbox-env-config
+              items:
+                - key: DB_CONN_MAX_AGE
+                  path: db_conn_max_age.py
+
         # --- LDAP認証設定 ---
         # 注意: ldap_bind_password は Helm が自動生成する netbox-config Secret に含まれます
         # 既存の netbox-config Secret を直接更新してください:
@@ -94,11 +108,11 @@ spec:
         # --- NetBoxコンテナのリソース設定 ---
         resources:
           requests:
-            cpu: 100m
-            memory: 512Mi
-          limits:
-            cpu: 1000m
+            cpu: 200m
             memory: 1Gi
+          limits:
+            cpu: 1500m
+            memory: 2Gi
 
         # --- Worker設定 ---
         worker:
