@@ -154,7 +154,14 @@ spec:
             limits:
               cpu: 250m
               memory: 256Mi
-        
+
+        # チャート組み込みの ingress-nginx を無効化（traefik で別途構築）
+        # 関連リソースは netbox-diode-traefik.yaml で定義
+        ingressNginx:
+          enabled: false
+          controller:
+            enabled: false
+
   syncPolicy:
     automated:
       prune: true

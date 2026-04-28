@@ -124,7 +124,7 @@ The Orb Agent chart deploys a DaemonSet that runs network and SNMP discovery:
 - External Secret management for PostgreSQL credentials
 
 **Plugin Configuration**:
-- `netbox_diode_plugin.diode_target_override`: Points to Ingress-Nginx controller for gRPC
+- `netbox_diode_plugin.diode_target_override`: Points to `netbox-diode-ingress` ExternalName Service (forwards to Traefik / rke2-traefik) for gRPC routing into the Diode IngressRoute
 - `netbox_bgp`: Enables BGP peering management in NetBox
 
 **LDAP Authentication** (argocd/applications/netbox.yaml):
@@ -145,13 +145,19 @@ The Orb Agent chart deploys a DaemonSet that runs network and SNMP discovery:
 **Component Communication**:
 ```
 Orb Agent (DaemonSet)
-    ↓ gRPC via grpc://
-NetBox Diode Ingress-Nginx Controller (netbox-diode.svc.cluster.local:80)
+    ↓ gRPC via grpc://netbox-diode-ingress.netbox-diode.svc.cluster.local:80
+ExternalName Service (netbox-diode/netbox-diode-ingress)
+    ↓ DNS CNAME → rke2-traefik.kube-system.svc.cluster.local:80
+Traefik IngressRoute (h2c) + ForwardAuth Middleware → /diode/...
     ↓
-Diode Service
+Diode Ingester / Reconciler / Auth Services
     ↓ gRPC
 NetBox with Diode Plugin
 ```
+
+Traefik resources for Diode are defined in `argocd/applications/netbox-diode-traefik.yaml`
+(ExternalName Service + IngressRoute + Middleware). The chart's bundled ingress-nginx
+is disabled via `ingressNginx.enabled: false` in `netbox-diode-with-existing-pvc.yaml`.
 
 **Key Points**:
 - Orb Agent sends telemetry via gRPC to Diode

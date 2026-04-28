@@ -27,8 +27,8 @@ spec:
 
         # --- Diode Backend Configuration ---
         diode:
-          # Diodeエンドポイント（Ingress-Nginx経由でgRPC接続）
-          target: "grpc://netbox-diode-ingress-nginx-controller.netbox-diode.svc.cluster.local:80/diode"
+          # Diodeエンドポイント（netbox-diode NS の ExternalName Service 経由で Traefik に到達）
+          target: "grpc://netbox-diode-ingress.netbox-diode.svc.cluster.local:80/diode"
 
         # --- Agent Configuration ---
         agent:
@@ -138,7 +138,7 @@ spec:
             allowDNS: true
             diodeEndpoint:
               # 自動的にdiode.targetから抽出されますが、明示的に指定も可能
-              # host: "netbox-diode-ingress-nginx-controller.netbox-diode.svc.cluster.local"
+              # host: "netbox-diode-ingress.netbox-diode.svc.cluster.local"
               # port: 80
 
         # --- Pod Disruption Budget ---

@@ -1,0 +1,90 @@
+---
+# クラスタ traefik (kube-system) を netbox-diode NS から参照するための ExternalName Service
+# 旧 netbox-diode-ingress-nginx-controller Service の置き換え
+# クライアント (netbox / orb-agent) はこの hostname:port を gRPC ターゲットとして使う
+apiVersion: v1
+kind: Service
+metadata:
+  name: netbox-diode-ingress
+  namespace: netbox-diode
+  labels:
+    app.kubernetes.io/component: netbox-diode-ingress
+    app.kubernetes.io/name: diode
+spec:
+  type: ExternalName
+  externalName: rke2-traefik.kube-system.svc.cluster.local
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+---
+# diode の auth introspect を呼び出す ForwardAuth Middleware
+# (旧 nginx.ingress.kubernetes.io/auth-url + auth-method の置換)
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: diode-auth-introspect
+  namespace: netbox-diode
+spec:
+  forwardAuth:
+    address: http://netbox-diode-auth.netbox-diode.svc.cluster.local:8080/introspect
+---
+# /diode/<rest> を /<rest> に書き換える Middleware
+# (旧 nginx.ingress.kubernetes.io/rewrite-target: /$1 + regex path の置換)
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: diode-strip-prefix
+  namespace: netbox-diode
+spec:
+  replacePathRegex:
+    regex: ^/diode/(.*)
+    replacement: /$1
+---
+# gRPC IngressRoute (Ingester / Reconciler)
+# scheme: h2c で TLS なし HTTP/2 として gRPC バックエンドに転送
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: netbox-diode-grpc
+  namespace: netbox-diode
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: PathRegexp(`^/diode/diode\.v1\.IngesterService.*`)
+      kind: Rule
+      middlewares:
+        - name: diode-auth-introspect
+        - name: diode-strip-prefix
+      services:
+        - name: netbox-diode-ingester
+          port: 8081
+          scheme: h2c
+    - match: PathRegexp(`^/diode/diode\.v1\.ReconcilerService.*`)
+      kind: Rule
+      middlewares:
+        - name: diode-auth-introspect
+        - name: diode-strip-prefix
+      services:
+        - name: netbox-diode-reconciler
+          port: 8081
+          scheme: h2c
+---
+# HTTP IngressRoute (Auth エンドポイント)
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: netbox-diode-http
+  namespace: netbox-diode
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: PathPrefix(`/diode/auth/`)
+      kind: Rule
+      middlewares:
+        - name: diode-strip-prefix
+      services:
+        - name: netbox-diode-auth
+          port: 8080
