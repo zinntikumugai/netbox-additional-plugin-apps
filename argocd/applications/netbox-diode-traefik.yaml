@@ -29,7 +29,8 @@ spec:
   forwardAuth:
     address: http://netbox-diode-auth.netbox-diode.svc.cluster.local:8080/introspect
 ---
-# /diode/<rest> を /<rest> に書き換える Middleware
+# /diode/<rest> を /<rest> に書き換える Middleware (gRPC ルート用)
+# 例: /diode/diode.v1.IngesterService/Ingest -> /diode.v1.IngesterService/Ingest
 # (旧 nginx.ingress.kubernetes.io/rewrite-target: /$1 + regex path の置換)
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
@@ -39,6 +40,20 @@ metadata:
 spec:
   replacePathRegex:
     regex: ^/diode/(.*)
+    replacement: /$1
+---
+# /diode/auth/<rest> を /<rest> に書き換える Middleware (auth ルート用)
+# diode-auth サービスは /auth/ プレフィックスなしでエンドポイントを公開している
+# (例: /token, /introspect) ため /diode/auth/ をまとめて剥がす必要がある。
+# 旧 nginx ingress では path: /diode/auth/(.*) + rewrite-target: /$1 で同じ挙動だった。
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: diode-auth-strip-prefix
+  namespace: netbox-diode
+spec:
+  replacePathRegex:
+    regex: ^/diode/auth/(.*)
     replacement: /$1
 ---
 # gRPC IngressRoute (Ingester / Reconciler)
@@ -84,7 +99,7 @@ spec:
     - match: PathPrefix(`/diode/auth/`)
       kind: Rule
       middlewares:
-        - name: diode-strip-prefix
+        - name: diode-auth-strip-prefix
       services:
         - name: netbox-diode-auth
           port: 8080
