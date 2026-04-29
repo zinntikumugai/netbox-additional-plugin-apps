@@ -76,7 +76,8 @@ spec:
             ignoreCertErrors: false
 
             # Bind認証情報
-            # bindPasswordは netbox-app-secret の ldap_bind_password キーから自動読み込み
+            # bindPasswordは Helm 自動生成の netbox-config Secret の ldap_bind_password キーから読み込み
+            # (kubectl edit secret netbox-config -n netbox2 で更新)
             bindDn: "cn=admin,dc=zin3,dc=cc"
 
             # ユーザー検索設定
