@@ -63,6 +63,10 @@ kind: IngressRoute
 metadata:
   name: netbox-diode-grpc
   namespace: netbox-diode
+  annotations:
+    # rke2-traefik は --providers.kubernetescrd.ingressClass=traefik で起動しており、
+    # この annotation が無い IngressRoute はロードされない (Traefik 側で 404 になる)。
+    kubernetes.io/ingress.class: traefik
 spec:
   entryPoints:
     - web
@@ -92,6 +96,10 @@ kind: IngressRoute
 metadata:
   name: netbox-diode-http
   namespace: netbox-diode
+  annotations:
+    # rke2-traefik は --providers.kubernetescrd.ingressClass=traefik で起動しており、
+    # この annotation が無い IngressRoute はロードされない (Traefik 側で 404 になる)。
+    kubernetes.io/ingress.class: traefik
 spec:
   entryPoints:
     - web
