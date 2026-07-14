@@ -97,7 +97,12 @@ spec:
 
             # グループ検索設定
             groupSearchBaseDn: "DC=zin3,DC=cc"
-            groupSearchClass: "(objectClass=groupOfNames)"  # Active Directoryの場合
+            # objectClass 名のみを指定すること（フィルタ全体ではない）。
+            # chart の ldap_config.py が (objectClass=<値>) と包むため、
+            # ここに "(objectClass=groupOfNames)" を入れると
+            # (objectClass=(objectClass=groupOfNames)) という不正フィルタになり
+            # bind 成功後のグループ検索が FILTER_ERROR で失敗しログインが拒否される。
+            groupSearchClass: "groupOfNames"
             groupType: "GroupOfNamesType"
 
             # 権限マッピング（必要に応じてコメント解除して設定）
