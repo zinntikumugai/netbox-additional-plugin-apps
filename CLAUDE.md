@@ -128,17 +128,24 @@ The Orb Agent chart deploys a DaemonSet that runs network and SNMP discovery:
 - `netbox_bgp`: Enables BGP peering management in NetBox
 
 **LDAP Authentication** (argocd/applications/netbox.yaml):
-- `superuser.existingSecret`: References `netbox-app-secret` for secret_key and LDAP credentials
+- `existingSecret: "netbox-app-secret"`: Used for both top-level config (secret_key, ldap_bind_password,
+  email_password) and `superuser.existingSecret` (username, email, password, api_token). This repo is
+  public, so no real secret values live in `argocd/applications/`; only the Secret name is referenced there.
+- Secret keys/values come from `secrets-templates/netbox-app-secret.yaml.example` — copy it, drop the
+  `.example` suffix, fill in real values, and apply manually (see workflow below). `.gitignore` prevents the
+  de-`.example`'d file from ever being committed.
 - `remoteAuth.enabled`: Enables LDAP authentication backend
 - `remoteAuth.ldap`: LDAP/Active Directory configuration
   - `serverUri`: LDAP server endpoint (ldap:// or ldaps://)
   - `bindDn`: Service account DN for LDAP queries
-  - `bindPassword`: Auto-loaded from `netbox-app-secret.ldap_bind_password`
+  - `bindPassword`: Auto-loaded from `netbox-app-secret`'s `ldap_bind_password` key
   - `userSearchBaseDn`: Base DN for user searches
   - `groupSearchBaseDn`: Base DN for group searches
   - `autoCreateUser`: Automatically create NetBox users on first LDAP login
   - `groupSyncEnabled`: Sync LDAP groups with NetBox permissions
-- Secret template: `argocd/applications/netbox-app-secret.yaml` (manual kubectl apply required)
+- `netbox-env-config`: A separate, non-secret Secret holding `DB_CONN_MAX_AGE` (DB connection pool tuning
+  only, no credentials). Defined in `argocd/applications/netbox-env-config.yaml` and stays ArgoCD-synced
+  normally — it is not part of the manual existingSecret workflow above.
 
 ### Diode Architecture
 
@@ -203,26 +210,25 @@ agent:
    - `remoteAuth.ldap.userSearchBaseDn`: User search base
    - `remoteAuth.ldap.groupSearchBaseDn`: Group search base
 
-2. Generate and encode credentials:
+2. Generate credentials (the Secret template uses `stringData:`, so plain-text values — no base64
+   encoding needed):
    ```bash
    # Generate NetBox secret key
    python3 -c 'import secrets; print(secrets.token_urlsafe(50))'
-
-   # Encode secret key
-   echo -n 'your-generated-secret-key' | base64
-
-   # Encode LDAP bind password
-   echo -n 'your-ldap-bind-password' | base64
    ```
 
-3. Update `argocd/applications/netbox-app-secret.yaml` with encoded values
+3. Copy `secrets-templates/netbox-app-secret.yaml.example` to `secrets-templates/netbox-app-secret.yaml`
+   (the real-value file is `.gitignore`'d and must never be committed) and fill in the values
+   (`secret_key`, `ldap_bind_password`, `email_password`, plus superuser `username`/`email`/`password`/`api_token`)
 
 4. Apply the secret manually:
    ```bash
-   kubectl apply -f argocd/applications/netbox-app-secret.yaml
+   kubectl apply -f secrets-templates/netbox-app-secret.yaml -n netbox2
+   kubectl rollout restart deployment,statefulset -n netbox2 -l app.kubernetes.io/name=netbox
    ```
 
-5. ArgoCD will auto-sync NetBox with new LDAP configuration
+5. ArgoCD will auto-sync NetBox with the new LDAP configuration from `argocd/applications/netbox.yaml`
+   (the Secret itself is applied manually and is not managed by ArgoCD)
 
 6. Test LDAP login at NetBox UI with AD credentials
 
