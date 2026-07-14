@@ -3,12 +3,12 @@
 {
 	"name": "Kubernetes - Local Configuration",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/base:bullseye",
+	"image": "mcr.microsoft.com/devcontainers/base:trixie",
 
 	"features": {
 		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
 			"enableNonRootDocker": "true",
-			"moby": "true"
+			"moby": "false"
 		},
 		"ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
 			"version": "latest",
@@ -20,7 +20,9 @@
 		},
 		"./local-features/copy-kube-config": {},
 		"ghcr.io/anthropics/devcontainer-features/claude-code:1": {},
-		"ghcr.io/jsburckhardt/devcontainer-features/uv:1": {}
+		"ghcr.io/jsburckhardt/devcontainer-features/uv:1": {},
+		"ghcr.io/devcontainers/features/github-cli:1": {},
+		"ghcr.io/devcontainers/features/common-utils:2": {}
 	},
 
 	"remoteEnv": {
@@ -44,7 +46,8 @@
 			"source": "claude-code-bashhistory-${devcontainerId}",
 			"target": "/commandhistory",
 			"type": "volume"
-		}
+		},
+		"source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/vscode/.ssh,type=bind,readonly"
 	],
 
 	"runArgs": [
