@@ -1,21 +1,8 @@
 ---
-# PostgreSQL Authentication Secret for Netbox
-apiVersion: v1
-kind: Secret
-metadata:
-  name: netbox-postgresql-auth
-  namespace: netbox2
-  labels:
-    app.z1n.in/stack: netbox
-    app.z1n.in/component: postgresql
-type: Opaque
-stringData:
-  password: "WTLWdMCaHWSHkh/nbvEzJVyH2r3KMHg4MrzLgDqjqnM="
-  postgres-password: "MBtYE5zWHyGl2bBriRNlL1PoX23nn6ktJfYNM6ILHX0="
----
 # NetBox extraConfig Secret (DB connection pool optimization)
 # Helm values の extraConfig から参照される
 # /run/config/extra/0/db_conn_max_age.py としてマウントされ NetBox の追加設定として読み込まれる
+# 注意: これは秘密情報ではない（DB 接続の CONN_MAX_AGE 設定値のみ）ため ArgoCD 同期対象のまま。
 apiVersion: v1
 kind: Secret
 metadata:
