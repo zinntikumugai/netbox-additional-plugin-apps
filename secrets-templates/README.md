@@ -4,6 +4,11 @@
 **このディレクトリは App-of-Apps `netbox-git`（`source.path: argocd/applications`）の
 同期対象外**のため、ArgoCD に上書きされません。ユーザーが手動で apply します。
 
+> ⚠️ **適用順序（重要）**: `netbox-app-secret` の 7 キー（`email_password` は空文字でも
+> キー自体は必須）は、NetBox チャートの projected volume で **全て必須**です。ArgoCD で
+> `netbox` アプリを sync する**前に**この Secret を apply しておかないと、キー欠落で Pod が
+> `ContainerCreating` のまま起動しません。**順序は「Secret を apply → その後にアプリを sync/rollout」**。
+
 ## 適用手順
 
 1. `.example` をコピーして拡張子を外す:
