@@ -80,7 +80,9 @@ spec:
 
           ldap:
             # LDAPサーバー設定（環境に合わせて変更してください）
-            serverUri: "ldap.service.z1n.in:389"
+            # 必ず ldap:// または ldaps:// スキームを付けること。
+            # スキームが無いと python-ldap が接続できず全 LDAP ログインが失敗する。
+            serverUri: "ldap://ldap.service.z1n.in:389"
             startTls: false
             ignoreCertErrors: false
 
