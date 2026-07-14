@@ -1,0 +1,19 @@
+# PostgreSQL 認証 Secret テンプレート
+# 使い方:
+#   1. このファイルをコピーし .example を外す
+#   2. <...> を実値に置換
+#   3. kubectl apply -f netbox-postgresql-auth.yaml -n netbox2
+# 注意: 旧 argocd/applications/netbox-secrets.yaml に平文コミットされていた値は
+#       git 履歴に残っています。真の是正として DB パスワードのローテーションを推奨します。
+apiVersion: v1
+kind: Secret
+metadata:
+  name: netbox-postgresql-auth
+  namespace: netbox2
+  labels:
+    app.z1n.in/stack: netbox
+    app.z1n.in/component: postgresql
+type: Opaque
+stringData:
+  password: "<netbox DB ユーザーパスワード>"
+  postgres-password: "<postgres 管理ユーザーパスワード>"

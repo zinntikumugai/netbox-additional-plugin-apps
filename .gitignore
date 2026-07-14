@@ -1,1 +1,5 @@
 .env
+
+# secrets-templates 内の実値ファイル（.example のみ追跡する）
+secrets-templates/*.yaml
+!secrets-templates/*.yaml.example

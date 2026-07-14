@@ -17,7 +17,16 @@ spec:
       values: |
         global:
           storageClass: truenas-nfs-csi
-        
+
+        # --- 秘密情報は existingSecret 経由（パブリックリポジトリのため実値を保持しない）---
+        # netbox-app-secret のキー: secret_key / ldap_bind_password / email_password
+        #   （secrets-templates/netbox-app-secret.yaml.example から手動 apply）
+        existingSecret: "netbox-app-secret"
+
+        # superuser 認証情報も同じ Secret から読む（username/email/password/api_token キー）
+        superuser:
+          existingSecret: "netbox-app-secret"
+
         # --- NetBox コンテナ（プラグインを内包したカスタムイメージを推奨） ---
         image:
           # 例：あなたのレジストリのカスタムイメージ
@@ -54,10 +63,10 @@ spec:
                   path: db_conn_max_age.py
 
         # --- LDAP認証設定 ---
-        # 注意: ldap_bind_password は Helm が自動生成する netbox-config Secret に含まれます
-        # 既存の netbox-config Secret を直接更新してください:
-        #   kubectl edit secret netbox-config -n netbox2
-        #   ldap_bind_password: <base64-encoded-password>
+        # 注意: ldap_bind_password は existingSecret "netbox-app-secret" から読み込まれます。
+        # 更新するには secrets-templates/netbox-app-secret.yaml.example を編集して
+        #   kubectl apply -f <filled>.yaml -n netbox2
+        # を実行し、その後 NetBox Deployment / worker を rollout restart してください。
         remoteAuth:
           enabled: true
           backends:
@@ -76,8 +85,7 @@ spec:
             ignoreCertErrors: false
 
             # Bind認証情報
-            # bindPasswordは Helm 自動生成の netbox-config Secret の ldap_bind_password キーから読み込み
-            # (kubectl edit secret netbox-config -n netbox2 で更新)
+            # bindPassword は existingSecret "netbox-app-secret" の ldap_bind_password キーから読み込み
             bindDn: "cn=admin,dc=zin3,dc=cc"
 
             # ユーザー検索設定
