@@ -1,3 +1,16 @@
+---
+# HTTP を HTTPS へ 301 リダイレクトする Traefik Middleware
+# 既に https のリクエストはリダイレクト後 URL が同一となり Traefik がスキップするためループしない
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: netbox-https-redirect
+  namespace: netbox2
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -7,12 +20,22 @@ metadata:
     # External DNS設定
     external-dns.alpha.kubernetes.io/hostname: netbox2.service.z1n.in
     external-dns.alpha.kubernetes.io/ttl: "300"
+    # cert-manager が Certificate と netbox2-tls Secret を自動生成（既存 home-assistant と同方式）
+    cert-manager.io/cluster-issuer: cf-cluster-issuer
+    # Traefik: HTTP/HTTPS 両エントリポイントで受け付ける
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    # HTTP→HTTPS 強制リダイレクト（<namespace>-<middleware>@kubernetescrd 形式）
+    traefik.ingress.kubernetes.io/router.middlewares: netbox2-netbox-https-redirect@kubernetescrd
   labels:
     app.kubernetes.io/name: netbox
     app.kubernetes.io/instance: netbox
     app.kubernetes.io/component: ingress
 spec:
   ingressClassName: traefik
+  tls:
+  - hosts:
+    - netbox2.service.z1n.in
+    secretName: netbox2-tls
   rules:
   - host: netbox2.service.z1n.in
     http:
@@ -24,8 +47,3 @@ spec:
             name: netbox
             port:
               number: 80
-  # TLS設定（必要に応じてコメント解除）
-  # tls:
-  # - hosts:
-  #   - netbox2.service.z1n.in
-  #   secretName: netbox-tls-secret
