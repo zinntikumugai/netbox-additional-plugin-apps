@@ -96,19 +96,24 @@ spec:
             userDnTemplate: "uid=%(user)s,ou=people,dc=zin3,dc=cc"  # 固定DN形式の場合
 
             # グループ検索設定
-            groupSearchBaseDn: "DC=zin3,DC=cc"
+            # zin3 の LDAP は posixGroup（メンバーは memberUid）を使用。
+            groupSearchBaseDn: "ou=groups,dc=zin3,dc=cc"
             # objectClass 名のみを指定すること（フィルタ全体ではない）。
             # chart の ldap_config.py が (objectClass=<値>) と包むため、
-            # ここに "(objectClass=groupOfNames)" を入れると
-            # (objectClass=(objectClass=groupOfNames)) という不正フィルタになり
+            # ここに "(objectClass=posixGroup)" を入れると
+            # (objectClass=(objectClass=posixGroup)) という不正フィルタになり
             # bind 成功後のグループ検索が FILTER_ERROR で失敗しログインが拒否される。
-            groupSearchClass: "groupOfNames"
-            groupType: "GroupOfNamesType"
+            groupSearchClass: "posixGroup"
+            groupType: "PosixGroupType"
 
-            # 権限マッピング（必要に応じてコメント解除して設定）
-            # requireGroupDn: ["CN=NetBox Users,OU=Groups,DC=example,DC=com"]
-            # isAdminDn: ["CN=NetBox Admins,OU=Groups,DC=example,DC=com"]
-            # isSuperUserDn: ["CN=NetBox SuperUsers,OU=Groups,DC=example,DC=com"]
+            # 権限マッピング
+            # 注意（chart 仕様）: is_superuser / is_staff のグループ付与は
+            # requireGroupDn が設定されている時のみ有効になる。そのため
+            # zin3group を superuser にするには require group にも指定する。
+            # 結果として zin3group メンバーのみログイン可・全員 superuser となる。
+            requireGroupDn: ["cn=zin3group,ou=groups,dc=zin3,dc=cc"]
+            # isAdminDn: ["cn=...,ou=groups,dc=zin3,dc=cc"]
+            isSuperUserDn: ["cn=zin3group,ou=groups,dc=zin3,dc=cc"]
 
             # グループ同期設定
             findGroupPerms: true
