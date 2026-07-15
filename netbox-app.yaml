@@ -12,5 +12,10 @@ spec:
     server: https://kubernetes.default.svc
     namespace: netbox2
   syncPolicy:
+    # push だけで argocd/applications/ 配下を完全自動デプロイする。
+    # prune: true のため、git から削除したマニフェストはクラスタからも削除される。
+    automated:
+      prune: true
+      selfHeal: true
     syncOptions:
       - CreateNamespace=true
