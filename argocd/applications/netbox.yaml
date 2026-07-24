@@ -11,7 +11,7 @@ spec:
   source:
     repoURL: https://charts.netbox.oss.netboxlabs.com/
     chart: netbox
-    targetRevision: 7.1.10
+    targetRevision: 8.3.38
     helm:
       releaseName: netbox
       values: |
@@ -57,6 +57,22 @@ spec:
           processes: 2
           max_requests: 500
           
+        # --- liveness プローブ上書き（Granian 対応）---
+        # netbox-docker 5.0 (NetBox 4.6) はアプリサーバが NGINX Unit から Granian に変更された。
+        # チャート 7.1.10 (appVersion 4.4.4) の既定 liveness は Unit 用の
+        #   http-get nginx-status:8081 /status/applications/netbox/processes/running
+        # を叩くが、Granian には 8081 も当該パスも無いため connection refused → 誤って
+        # kill され Pod がクラッシュループする。Granian が listen する http(8080) への
+        # TCP チェックに置き換える（/login/ は稀に数秒かかるため timeout に強い TCP を採用）。
+        # ※ 恒久的にはチャートを appVersion 4.6.5 系 (8.3.x) へ上げて整合させるのが望ましい。
+        customLivenessProbe:
+          tcpSocket:
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+
         # --- DB 接続設定 ---
         # 永続接続を無効化（CONN_MAX_AGE=0）。1リクエスト毎に接続を張り直すため、
         # PostgreSQL 再起動などで接続が切れても stale 接続を再利用せず、
