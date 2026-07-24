@@ -28,7 +28,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: netbox-custom
-  BASE_VERSION: v4.4.4-3.4.1
+  BASE_VERSION: v4.6.5-5.0.2
   TAG_SUFFIX: -with-plugin
 
 jobs:
