@@ -46,9 +46,9 @@ helm lint ./charts/orb
 docker build -t ghcr.io/zinntikumugai/netbox-custom:latest ./docker/netbox-custom
 
 # Image includes:
-# - NetBox v4.4.4-3.4.1
-# - netboxlabs-diode-netbox-plugin (v1.4.1)
-# - netbox-bgp (v0.17.0)
+# - NetBox v4.6.5-5.0.2
+# - netboxlabs-diode-netbox-plugin (v1.14.1)
+# - netbox-bgp (v0.19.0)
 ```
 
 ### ArgoCD Operations (via MCP)
@@ -113,7 +113,7 @@ The Orb Agent chart deploys a DaemonSet that runs network and SNMP discovery:
 ### NetBox Deployment
 
 **Custom Image** (docker/netbox-custom/Dockerfile:2-13):
-- Base: `netboxcommunity/netbox:v4.4.4-3.4.1`
+- Base: `netboxcommunity/netbox:v4.6.5-5.0.2`
 - Uses `uv` package manager for fast plugin installation
 - Pre-installs `netboxlabs-diode-netbox-plugin` and `netbox-bgp`
 
