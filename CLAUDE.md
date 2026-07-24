@@ -143,9 +143,12 @@ The Orb Agent chart deploys a DaemonSet that runs network and SNMP discovery:
   - `groupSearchBaseDn`: Base DN for group searches
   - `autoCreateUser`: Automatically create NetBox users on first LDAP login
   - `groupSyncEnabled`: Sync LDAP groups with NetBox permissions
-- `netbox-env-config`: A separate, non-secret Secret holding `DB_CONN_MAX_AGE` (DB connection pool tuning
-  only, no credentials). Defined in `argocd/applications/netbox-env-config.yaml` and stays ArgoCD-synced
-  normally — it is not part of the manual existingSecret workflow above.
+- DB connection tuning: set via the chart value `externalDatabase.connMaxAge` in `netbox.yaml`
+  (currently `0` to disable persistent connections). The chart's configmap renders
+  `DATABASES.default.CONN_MAX_AGE` from this value, and NetBox uses the `DATABASES` dict — so this is the
+  only effective place to tune it. Note: the chart's `extraConfig` file loader only reads `*.yaml` files
+  (via `yaml.safe_load` + deep-merge), so a `.py` extraConfig is silently ignored; the old
+  `netbox-env-config` / `db_conn_max_age.py` mechanism was a no-op and has been removed.
 
 ### Diode Architecture
 

@@ -57,13 +57,14 @@ spec:
           processes: 2
           max_requests: 500
           
-        # データベース接続プールを最適化
-        extraConfig:
-          - secret:
-              secretName: netbox-env-config
-              items:
-                - key: DB_CONN_MAX_AGE
-                  path: db_conn_max_age.py
+        # --- DB 接続設定 ---
+        # 永続接続を無効化（CONN_MAX_AGE=0）。1リクエスト毎に接続を張り直すため、
+        # PostgreSQL 再起動などで接続が切れても stale 接続を再利用せず、
+        # 長寿命ワーカーが /login/ 等で HTTP 500 を返し続ける問題が原理的に起きない。
+        # （チャートは configmap で DATABASES.default.CONN_MAX_AGE を
+        #  externalDatabase.connMaxAge から生成する。bundled postgresql でも本値が使われる）
+        externalDatabase:
+          connMaxAge: 0
 
         # --- LDAP認証設定 ---
         # 注意: ldap_bind_password は existingSecret "netbox-app-secret" から読み込まれます。
