@@ -202,9 +202,15 @@ spec:
               limits:
                 cpu: 500m
                 memory: 1Gi
-            # Helmチャートのデフォルトサービスを無効化
+            # primary Service (netbox-postgresql) を有効化する。
+            # NetBox の DB HOST はチャートが postgresql の primary fullname
+            # (= netbox-postgresql) にレンダリングするため、この Service が無いと
+            # "failed to resolve host 'netbox-postgresql'" で起動できない。
+            # （過去は無効化していたが、arphan の netbox-postgresql Service が
+            #  auto-prune 導入前まで残存していたため偶然解決できていた。auto-prune で
+            #  それが削除され解決不能になったため、正規に Service を有効化する）
             service:
-              enabled: false
+              enabled: true
           # PDB設定（セレクタに固有ラベルを追加）
           pdb:
             create: true
