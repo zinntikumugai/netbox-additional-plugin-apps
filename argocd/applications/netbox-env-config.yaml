@@ -1,8 +1,8 @@
 ---
-# NetBox extraConfig Secret (DB connection pool optimization)
+# NetBox extraConfig Secret (DB connection settings)
 # Helm values の extraConfig から参照される
 # /run/config/extra/0/db_conn_max_age.py としてマウントされ NetBox の追加設定として読み込まれる
-# 注意: これは秘密情報ではない（DB 接続の CONN_MAX_AGE 設定値のみ）ため ArgoCD 同期対象のまま。
+# 注意: これは秘密情報ではない（DB 接続設定のみ）ため ArgoCD 同期対象のまま。
 apiVersion: v1
 kind: Secret
 metadata:
@@ -13,5 +13,11 @@ metadata:
     app.z1n.in/component: config
 type: Opaque
 stringData:
+  # NetBox は DATABASE dict をそのまま DATABASES['default'] に渡す(settings.py)。
   DB_CONN_MAX_AGE: |
+    # 永続接続を維持（性能）。
     DATABASE['CONN_MAX_AGE'] = 300
+    # ただしリクエスト開始時に接続の死活確認を行い、死んだ接続は自動再接続する。
+    # これが無いと PostgreSQL 再起動後に長寿命ワーカーが死んだ永続接続を再利用し、
+    # /login/ などが HTTP 500 を返し続ける（自然回復しない）。
+    DATABASE['CONN_HEALTH_CHECKS'] = True
