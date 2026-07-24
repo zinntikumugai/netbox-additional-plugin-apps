@@ -33,8 +33,11 @@ spec:
           registry: ghcr.io
           # repository: netbox-community/netbox
           repository: zinntikumugai/netbox-custom
-          tag: "latest"
-          pullPolicy: Always
+          # イミュータブルタグで固定（どのイメージが動いているか一意・rollback 確実）。
+          # 更新時は image-build ワークフローが出力する新しい <version>-with-plugin-<hash> に差し替える。
+          tag: "v4.6.5-5.0.2-with-plugin-58d7c0a"
+          # 固定タグのため再取得は不要。イメージ更新はタグ変更（＝git変更）で行う。
+          pullPolicy: IfNotPresent
         
         plugins:
           - netbox_diode_plugin
