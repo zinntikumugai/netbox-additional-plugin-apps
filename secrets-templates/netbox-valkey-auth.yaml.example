@@ -1,0 +1,22 @@
+# Valkey 認証 Secret テンプレート
+# 使い方:
+#   1. このファイルをコピーし .example を外す
+#   2. <...> を実値に置換（生成例: python3 -c 'import secrets; print(secrets.token_urlsafe(32))'）
+#   3. kubectl apply -f netbox-valkey-auth.yaml -n netbox2
+# 注意: この Secret は ArgoCD で netbox アプリを sync する「前に」必ず apply すること。
+#       未作成のまま sync すると valkey Pod が Secret 欠如で起動できない。
+# 補足: 旧構成では valkey.auth 未指定だったため、チャートが Secret netbox-valkey を
+#       毎レンダリングでランダム生成し、ArgoCD の selfHeal が日次で上書きしていた。
+#       Valkey は再起動で新パスワードを拾うが NetBox は起動時に一度読むだけのため
+#       不一致となり AuthenticationError で全断していた。本 Secret で固定する。
+apiVersion: v1
+kind: Secret
+metadata:
+  name: netbox-valkey-auth
+  namespace: netbox2
+  labels:
+    app.z1n.in/stack: netbox
+    app.z1n.in/component: valkey
+type: Opaque
+stringData:
+  valkey-password: "<valkey パスワード>"
