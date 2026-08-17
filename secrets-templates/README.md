@@ -18,9 +18,18 @@
    cp netbox-postgresql-auth.yaml.example netbox-postgresql-auth.yaml
    cp netbox-valkey-auth.yaml.example netbox-valkey-auth.yaml
    ```
-2. `<...>` プレースホルダを実値に置換。
-   - `secret_key`: `python3 -c 'import secrets; print(secrets.token_urlsafe(50))'`
-   - `valkey-password`: `python3 -c 'import secrets; print(secrets.token_urlsafe(32))'`
+2. `<...>` プレースホルダを実値に置換。ランダム値は `openssl` で生成する:
+   ```bash
+   # secret_key（token_urlsafe(50) 相当・67 文字）
+   openssl rand -base64 50 | tr -d '\n' | tr '+/' '-_' | tr -d '='
+   # valkey-password / DB パスワード（token_urlsafe(32) 相当・43 文字）
+   openssl rand -base64 32 | tr -d '\n' | tr '+/' '-_' | tr -d '='
+   ```
+   出力は base64url なので `$` やクォートを含まず、YAML にも valkey の `requirepass` にも
+   そのまま入れて安全。
+   > このリポジトリの devcontainer には `python3-minimal` しか入っておらず標準ライブラリが
+   > 欠けているため、`python3 -c 'import secrets; ...'` は `ModuleNotFoundError` になる。
+   > Python を使いたい場合は先に `sudo apt-get install -y libpython3.13-stdlib` が必要。
 3. 適用（namespace は `netbox2`）:
    ```bash
    kubectl apply -f netbox-app-secret.yaml -n netbox2

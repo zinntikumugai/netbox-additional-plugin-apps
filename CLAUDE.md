@@ -245,9 +245,12 @@ agent:
 2. Generate credentials (the Secret template uses `stringData:`, so plain-text values — no base64
    encoding needed):
    ```bash
-   # Generate NetBox secret key
-   python3 -c 'import secrets; print(secrets.token_urlsafe(50))'
+   # Generate NetBox secret key (token_urlsafe(50) equivalent)
+   openssl rand -base64 50 | tr -d '\n' | tr '+/' '-_' | tr -d '='
    ```
+   Use `openssl`, not `python3`: this devcontainer ships only `python3-minimal`, so the stdlib is
+   absent and `import secrets` raises `ModuleNotFoundError` (same for `http`, `urllib` internals).
+   Install `libpython3.13-stdlib` first if a script really needs Python.
 
 3. Copy `secrets-templates/netbox-app-secret.yaml.example` to `secrets-templates/netbox-app-secret.yaml`
    (the real-value file is `.gitignore`'d and must never be committed) and fill in the values
