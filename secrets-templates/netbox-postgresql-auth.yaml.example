@@ -4,7 +4,10 @@
 #   2. <...> を実値に置換
 #   3. kubectl apply -f netbox-postgresql-auth.yaml -n netbox2
 # 注意: 旧 argocd/applications/netbox-secrets.yaml に平文コミットされていた値は
-#       git 履歴に残っています。真の是正として DB パスワードのローテーションを推奨します。
+#       git 履歴に残っています（公開リポジトリのため消せない）。2026-08-17 にローテーション
+#       済みで、履歴の値では認証が通らないことを確認済み。
+#       再ローテーション時は README.md の「パスワードローテーション時の注意」を参照。
+#       Secret を書き換えるだけでは DB 側は変わらないので ALTER USER が先。
 apiVersion: v1
 kind: Secret
 metadata:

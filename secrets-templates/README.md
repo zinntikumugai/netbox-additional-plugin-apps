@@ -68,9 +68,10 @@ Pod が不健全になります。
 - **Valkey**: `requirepass` はサーバ起動時に Secret から読まれます。Secret を apply したあと
   valkey → NetBox の順に再起動すれば整合します（キャッシュ / RQ キュー用途のためデータ影響なし）。
 
-> ⚠️ 旧 `argocd/applications/netbox-secrets.yaml` に平文コミットされていた PostgreSQL の
-> パスワードは git 履歴に残っており、**現在もそのまま使われています**。公開リポジトリのため
-> 履歴からは消せないので、上記手順でのローテーションが実効的な是正策です。
+> 旧 `argocd/applications/netbox-secrets.yaml` に平文コミットされていた PostgreSQL の
+> パスワードは、公開リポジトリのため git 履歴からは消せません。**2026-08-17 に上記手順で
+> ローテーション済み**で、履歴に残る値では `netbox` / `postgres` とも
+> `password authentication failed` になることを確認済みです。
 
 ## ⚠️ 実値ファイルを絶対にコミットしないこと
 
