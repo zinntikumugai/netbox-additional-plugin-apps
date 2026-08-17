@@ -119,9 +119,36 @@ The Orb Agent chart deploys a DaemonSet that runs network and SNMP discovery:
 
 **ArgoCD Configuration** (argocd/applications/netbox.yaml):
 - Source: Official NetBox Helm chart from `charts.netbox.oss.netboxlabs.com`
-- Custom image: `ghcr.io/zinntikumugai/netbox-custom:latest`
+- Custom image: pinned to an immutable tag (`ghcr.io/zinntikumugai/netbox-custom:<version>-with-plugin-<hash>`)
 - PostgreSQL subchart with custom labels to avoid PDB conflicts
-- External Secret management for PostgreSQL credentials
+- External Secret management for PostgreSQL and Valkey credentials
+
+**Bundled subchart credentials — never let the chart generate them**:
+- Both `postgresql.auth` and `valkey.auth` MUST use `existingSecret`. If `auth` is left unset, the
+  Bitnami subchart tries to reuse the live password via helm's `lookup`, but **ArgoCD's `helm template`
+  cannot do cluster lookups**, so it emits a fresh `randAlphaNum` password on every manifest
+  regeneration (verified: 6 renders of identical values produced 6 different passwords). Once ArgoCD's
+  manifest cache expires (24h default) `selfHeal` writes the new value into the Secret.
+- The resulting failure is asymmetric and therefore easy to misdiagnose: the datastore Pod's liveness
+  probe re-reads the mounted Secret, fails AUTH, gets killed by kubelet, restarts, and adopts the new
+  password — while NetBox/worker read the password **once at Django settings load** via
+  `configuration.py`'s `_read_secret()` and keep the stale one. Symptom is
+  `redis.exceptions.AuthenticationError` → `/login/` returns HTTP 500 → readiness fails → the Service
+  loses all endpoints (full outage), with `netbox-postgresql` looking perfectly healthy.
+- Secret names: `netbox-postgresql-auth` (keys `password`, `postgres-password`) and
+  `netbox-valkey-auth` (key `valkey-password`). Both are applied manually from `secrets-templates/`
+  and are NOT managed by ArgoCD. Apply them **before** syncing the `netbox` app.
+
+**Bitnami subchart images are digest-pinned**:
+- `bitnami/valkey` and `bitnami/postgresql` no longer publish version tags on Docker Hub — only
+  `latest`. Version tags were frozen into `bitnamilegacy/*`, which lacks the versions in use here
+  (valkey stops at 8.1.3 vs 8.1.4 running; postgresql stops at 17.6.0 vs PG18 running).
+- Therefore `valkey.image.digest` / `postgresql.image.digest` are pinned in `netbox.yaml`. The `tag`
+  stays `latest` but the digest wins. Bumping a version means editing the digest, so the change is
+  visible in git. Get the current digest with:
+  ```bash
+  kubectl get pod -n netbox2 netbox-valkey-primary-0 -o jsonpath='{.status.containerStatuses[0].imageID}'
+  ```
 
 **Plugin Configuration**:
 - `netbox_diode_plugin.diode_target_override`: Points to `netbox-diode-ingress` ExternalName Service (forwards to Traefik / rke2-traefik) for gRPC routing into the Diode IngressRoute
@@ -203,7 +230,9 @@ agent:
 
 1. Modify `docker/netbox-custom/Dockerfile` to change plugin versions
 2. Build and push new image
-3. Image pull policy is `Always`, so restart NetBox pods or update tag
+3. The image is pinned to an immutable tag with `pullPolicy: IfNotPresent`, so update
+   `image.tag` in `argocd/applications/netbox.yaml` to the new `<version>-with-plugin-<hash>`
+   emitted by the image-build workflow. Restarting Pods alone will NOT pick up a new build.
 
 ### Configuring NetBox LDAP Authentication
 
@@ -234,6 +263,31 @@ agent:
    (the Secret itself is applied manually and is not managed by ArgoCD)
 
 6. Test LDAP login at NetBox UI with AD credentials
+
+### Troubleshooting NetBox HTTP 500 / "0/1 Running"
+
+The Pod stays `Running` but `readinessProbe` fails with `statuscode: 500`, so the `netbox` Service
+ends up with zero ready endpoints and everything outside gets 503. The access log only shows
+`"GET /login/ HTTP/1.1" 500` — the traceback is not in stdout. Get the real exception from inside:
+
+```bash
+kubectl exec -n netbox2 deploy/netbox -c netbox -- \
+  sh -c 'curl -s http://127.0.0.1:8080/login/' | grep -A3 '<pre'
+```
+
+Common causes seen so far:
+- `redis.exceptions.AuthenticationError` — Valkey password drift. See "Bundled subchart credentials"
+  above. Confirm with `kubectl get secret -n netbox2 netbox-valkey-auth -o jsonpath='{range
+  .metadata.managedFields[*]}{.manager} {.time}{"\n"}{end}'`; an `argocd-controller` write means the
+  Secret is still chart-generated and will keep rotating.
+- The worker fails the same way but has no readiness gate, so it just loops
+  `could not connect to Redis instance: invalid username-password pair`.
+
+```bash
+# Valkey Pods restarting on a fixed daily schedule is the tell-tale sign of password rotation
+kubectl get pod -n netbox2 -l app.kubernetes.io/name=valkey
+kubectl get pod -n netbox2 netbox-valkey-primary-0 -o jsonpath='{.status.containerStatuses[0].lastState}'
+```
 
 ### Troubleshooting Orb Agent
 
